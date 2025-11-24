@@ -185,7 +185,7 @@ function setupContextMenu(bubbleEl, chatId, messageId) {
                 contextMenu.style.top = `${touchY - rect.height}px`;
             }
 
-        }, 800);
+        }, 500);
     };
 
     bubbleEl.ontouchend = function () { clearTimeout(touchTimeout); };
@@ -969,5 +969,6 @@ function initializeAuth() {
         }
     });
 }
+
 
 initializeAuth();
