@@ -353,6 +353,12 @@ body {
     /* 💡 เริ่มต้น: ซ่อนข้อความไว้ก่อน */
     opacity: 0; 
     transform: translateY(15px);
+
+    /* 🔑 [CRITICAL FIX]: ป้องกันการเลือกข้อความบน iOS/Mobile */
+    -webkit-user-select: none; /* สำหรับ Safari/iOS */
+    -moz-user-select: none;    /* สำหรับ Firefox */
+    -ms-user-select: none;     /* สำหรับ IE/Edge */
+    user-select: none;
 }
 
 /* 🚩 เมื่อ JS เพิ่ม Class 'show' เข้ามา ให้เรียกใช้ Animation */
@@ -385,6 +391,9 @@ body {
     max-width: 100%;
     /* 💡 เพิ่ม: Transition สำหรับเงาและ Transform */
     transition: box-shadow var(--transition-time) ease-in-out, transform var(--transition-time) ease-out;
+    /* 🔑 [CRITICAL FIX]: ป้องกันการเลือกข้อความบน iOS/Mobile */
+    -webkit-user-select: none; 
+    user-select: none;
 }
 
 /* 🚩 เพิ่ม Hover Effect */

@@ -161,6 +161,9 @@ function setupContextMenu(bubbleEl, chatId, messageId) {
     let touchTimeout;
     bubbleEl.ontouchstart = function (e) {
 
+        // 🔑 [CRITICAL FIX]: ป้องกันพฤติกรรมการเลือกข้อความของ iOS ทันทีที่แตะ
+        e.preventDefault();
+
         const touch = e.touches[0];
         const touchY = touch.clientY;
 
@@ -246,8 +249,8 @@ function cleanupChatSession() {
     // 🚩 [FIX]: ปรับปรุงการ off() ให้รองรับ Listener หลายประเภท (child_added, child_changed)
     if (currentChatId) {
         const messagesRef = database.ref(`${CHATS_PATH}/${currentChatId}/messages`);
-        messagesRef.off('child_added'); 
-        messagesRef.off('child_changed'); 
+        messagesRef.off('child_added');
+        messagesRef.off('child_changed');
     }
     chatListener = null;
 
@@ -294,10 +297,10 @@ function clearDisconnectHandler(chatId) {
  */
 async function handleInvalidIdCleanup(alertMessage) {
     if (alertMessage) alert(alertMessage);
-    
+
     // 🔑 NEW LOGIC: แค่ Sign Out/Reload เพื่อบังคับสุ่มใหม่
-    await performSignOut(true); 
-    
+    await performSignOut(true);
+
     return false; // เพื่อให้ onAuthStateChanged หยุดทำงานต่อ
 }
 
@@ -467,7 +470,7 @@ window.userLogout = async function () {
     } catch (error) {
         console.error("Error updating chat status before logout. Proceeding with sign out:", error);
     }
-    
+
     // 🔑 Sign Out และล้าง Local Storage/Reload โดยไม่ต้องลบ Auth User/Chat Record
     await performSignOut(true);
 };
@@ -653,8 +656,8 @@ function attachMessageListener(chatId) {
     // 1. ยกเลิก Listener เดิมทั้งหมด
     if (currentChatId) {
         const messagesRef = database.ref(`${CHATS_PATH}/${currentChatId}/messages`);
-        messagesRef.off('child_added'); 
-        messagesRef.off('child_changed'); 
+        messagesRef.off('child_added');
+        messagesRef.off('child_changed');
     }
 
     const messagesRef = database.ref(`${CHATS_PATH}/${chatId}/messages`);
@@ -673,18 +676,18 @@ function attachMessageListener(chatId) {
             playNotificationSound();
         }
     };
-    
+
     // 3. สร้าง Callback สำหรับข้อความที่ถูกอัปเดต (เช่น ถูกยกเลิกการส่ง)
     const handleMessageChange = (snapshot) => {
         const message = snapshot.val();
         const messageId = snapshot.key;
-        
+
         // 🔑 [CRITICAL FIX]: ลบ Element เดิมออกก่อนแล้วสร้างใหม่เพื่อรีเฟรชสถานะ
         const oldContainer = document.querySelector(`[data-message-id="${messageId}"]`);
         if (oldContainer) {
-             oldContainer.remove();
+            oldContainer.remove();
         }
-        
+
         // ส่งต่อให้ appendMessage จัดการสร้าง bubble ใหม่ (ที่เป็น [ข้อความถูกยกเลิกการส่ง])
         appendMessage(message, messageId, chatId);
     };
@@ -694,7 +697,7 @@ function attachMessageListener(chatId) {
     messagesRef.on('child_added', handleMessageAdd);
     messagesRef.on('child_changed', handleMessageChange); // <-- 🔑 เพิ่ม Listener นี้
 
-    chatListener = true; 
+    chatListener = true;
 }
 
 
@@ -702,7 +705,7 @@ function appendMessage(message, messageId, chatId) {
 
     // ตรวจสอบ chatBox (สมมติว่ามีการประกาศ chatBox ไว้แล้ว)
     const chatBox = document.getElementById('chatBox');
-    if (!chatBox) return; 
+    if (!chatBox) return;
 
     // 1. ตัวแปรเริ่มต้น
     const isUser = message.sender === 'user';
@@ -715,17 +718,17 @@ function appendMessage(message, messageId, chatId) {
     if (textContent.trim() === '' && !isDeleted) {
         return; // กรองข้อความว่างเปล่าที่ไม่ใช่ข้อความถูกลบ
     }
-    
+
     // 2. ป้องกันข้อความซ้ำ (เหลือแค่การป้องกันไม่ให้ child_added สร้างข้อความซ้ำ)
     if (document.querySelector(`[data-message-id="${messageId}"]`)) {
         // ให้ handleMessageChange จัดการลบ/สร้างใหม่เอง
-        return; 
+        return;
     }
 
     let bubbleClass;
     let containerClass;
     let senderDisplayName = null;
-    let formattedText; 
+    let formattedText;
 
     // 3. Logic การแสดงชื่อผู้ส่ง (สำหรับ Admin ที่ปลอมเป็น User)
     if (isUser && message.uid === ADMIN_UID_TO_HIDE) {
@@ -738,11 +741,11 @@ function appendMessage(message, messageId, chatId) {
     if (isDeleted) {
         // 🔑 [CRITICAL FIX]: แทนที่ข้อความเดิมด้วยข้อความยกเลิกการส่ง
         isSystem = true; // กำหนดให้เป็น System เพื่อให้ไม่มีเวลาแสดงผลและอยู่ตรงกลาง
-        bubbleClass = 'deleted-bubble'; 
+        bubbleClass = 'deleted-bubble';
         containerClass = 'system-container';
-        
+
         // ** 🚩 แก้ไข: เพิ่ม font-size: 0.8em; เพื่อให้ตัวอักษรเล็กลง **
-        formattedText = '<span style="font-style: italic; color: #888; font-size: 0.8em;">[ข้อความถูกยกเลิกการส่ง]</span>'; 
+        formattedText = '<span style="font-style: italic; color: #888; font-size: 0.8em;">[ข้อความถูกยกเลิกการส่ง]</span>';
 
     } else if (isSystem) {
         bubbleClass = 'system-bubble';
@@ -762,12 +765,12 @@ function appendMessage(message, messageId, chatId) {
     } else {
         return;
     }
-    
+
     // 5. การสร้าง Element
     const messageContainer = document.createElement('div');
     messageContainer.className = `message-container ${containerClass} new-message`;
     messageContainer.setAttribute('data-message-id', messageId);
-    
+
     // 6. การแสดงชื่อผู้ส่ง (ถ้ามี)
     if (senderDisplayName && isUser && !isDeleted) {
         const nameEl = document.createElement('div');
@@ -775,7 +778,7 @@ function appendMessage(message, messageId, chatId) {
         nameEl.innerHTML = senderDisplayName;
         messageContainer.appendChild(nameEl);
     }
-    
+
     // 7. สร้าง Bubble และใส่เนื้อหา
     const bubble = document.createElement('div');
     bubble.className = `message-bubble ${bubbleClass}`;
@@ -784,8 +787,8 @@ function appendMessage(message, messageId, chatId) {
     if (formattedText) {
         bubble.innerHTML = formattedText;
     } else {
-         // Fallback สำหรับข้อความดิบ
-         bubble.textContent = textContent; 
+        // Fallback สำหรับข้อความดิบ
+        bubble.textContent = textContent;
     }
 
     // 8. Event Listener
@@ -800,7 +803,7 @@ function appendMessage(message, messageId, chatId) {
         time.textContent = formatTimestamp(message.timestamp);
 
         // จัดเรียงตาม type ของผู้ส่ง
-        if (isUser) { 
+        if (isUser) {
             messageContainer.appendChild(bubble);
             messageContainer.appendChild(time);
         } else if (isAdmin) {
@@ -809,10 +812,10 @@ function appendMessage(message, messageId, chatId) {
         }
     } else {
         // ข้อความ System หรือ Deleted จะอยู่ตรงกลางและไม่มีเวลา
-        messageContainer.appendChild(bubble); 
+        messageContainer.appendChild(bubble);
     }
-    
-    
+
+
     // 🔑 [FIXED LOGIC]: การแทรก Element ตามลำดับเวลา (Push ID)
     let nextMessage = null;
     const existingMessages = chatBox.children;
@@ -828,7 +831,7 @@ function appendMessage(message, messageId, chatId) {
             break;
         }
     }
-    
+
     // 10. แทรก Element
     if (nextMessage) {
         // แทรกก่อนหน้าข้อความถัดไปที่เวลาใหม่กว่า
@@ -919,8 +922,8 @@ function copyMessage(chatId, messageId) {
     if (textToCopy) {
         // ตรวจสอบไม่ให้คัดลอกข้อความถูกลบ
         if (textToCopy.trim() === "[ข้อความถูกยกเลิกการส่ง]") {
-             alert("ไม่สามารถคัดลอกข้อความที่ถูกยกเลิกการส่งได้");
-             return;
+            alert("ไม่สามารถคัดลอกข้อความที่ถูกยกเลิกการส่งได้");
+            return;
         }
 
         navigator.clipboard.writeText(textToCopy)
