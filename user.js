@@ -219,7 +219,7 @@ window.showStartScreen = function () {
 
         userIdDisplay.style.display = 'block';
         userInfoArea.style.display = 'flex';
-        userIdDisplay.textContent = `รหัสผู้ใช้: ${currentUserId.substring(0, 7)}...`;
+        userIdDisplay.textContent = `รหัสผู้ใช้ ID: ${currentUserId.substring(0, 7)}...`;
 
     } else {
 
@@ -238,7 +238,7 @@ window.showStartScreen = function () {
 function showChatScreen() {
     hideAllScreens();
     chatScreen.style.display = 'flex';
-    chatTitle.textContent = `ห้องสนทนา: ${currentChatId ? currentChatId.substring(0, 8) : 'ใหม่'}...`;
+    chatTitle.textContent = `ห้องสนทนา ID: ${currentChatId ? currentChatId.substring(0, 8) : 'ใหม่'}...`;
 }
 
 /**
@@ -889,7 +889,7 @@ function sendMessage() {
 }
 
 function deleteMessage(chatId, messageId) {
-    if (!confirm("ต้องการยกเลิกการส่งหรือไม่?")) return;
+    if (!confirm("❗ต้องการยกเลิกการส่งหรือไม่?")) return;
 
     // 🔑 [SOFT DELETE]: อัปเดต 3 ฟิลด์สำคัญ: deleted: true, text: null, และ deletedAt
     database.ref(`${CHATS_PATH}/${chatId}/messages/${messageId}`).update({
