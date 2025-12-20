@@ -1051,7 +1051,7 @@ function setupNotifications(userId) {
             if (permission === 'granted') {
                 // 3. ดึง Token (อย่าลืมเปลี่ยน VAPID_KEY เป็นรหัสของคุณจาก Firebase Console)
                 messaging.getToken({
-                    vapidKey: 'BCeN36l4aQRbRN0eaFLSoNMiE2HJ6FfqdkS8bqouxQMTZKTxG7lVWUdJbTgzny4poMDy7cg0o2Fc90hNeZqb55w'
+                    vapidKey: 'BKhAJml-bMHqQT-4kaIe5Sdo4vSzlaoca2cmGmQMoFf9UKpzzuUf7rcEWJL4rIlqIArHxUZkyeRi63CnykNjLD0'
                 })
                     .then((currentToken) => {
                         if (currentToken) {
@@ -1079,15 +1079,10 @@ function setupNotifications(userId) {
 // เรียกใช้งานฟังก์ชันนี้หลังจากผู้ใช้ Login หรือ handleAuth() สำเร็จ
 // ตัวอย่าง: setupNotifications(generatedUserId);
 
-// ลองรันคำสั่งนี้ใน Console ของเบราว์เซอร์ (F12)
-Notification.requestPermission().then(permission => {
-    if (permission === 'granted') {
-        new Notification("ทดสอบแจ้งเตือน", {
-            body: "ถ้าเห็นข้อความนี้ แสดงว่าระบบในเครื่องพร้อมทำงานแล้ว!",
-            icon: "KCปก.png"
-        });
-    } else {
-        alert("คุณยังไม่ได้อนุญาตให้แจ้งเตือนครับ");
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        // ต้องเรียกฟังก์ชันนี้เพื่อให้ระบบเริ่มขอ Token
+        setupNotifications(user.uid);
     }
 });
 
