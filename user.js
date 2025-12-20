@@ -971,4 +971,37 @@ function initializeAuth() {
 }
 
 
+// เมื่อโหลดหน้าเว็บเสร็จ ให้แสดงป๊อปอัพ
+window.addEventListener('load', function () {
+    var popup = document.getElementById('popup-overlay');
+    if (popup) {
+        popup.style.display = 'flex';
+    }
+});
+
+// ป้องกันการ Error หากมีการเรียกใช้ฟังก์ชันปิดจากที่อื่น
+document.getElementById('close-popup').addEventListener('click', function () {
+    document.getElementById('popup-overlay').style.display = 'none';
+});
+
+const overlay = document.getElementById('popup-overlay');
+const closeBtn = document.getElementById('close-popup');
+
+// เปิดป๊อปอัพ
+window.addEventListener('load', function () {
+    overlay.style.display = 'flex';
+});
+
+// ปิดป๊อปอัพแบบนุ่มนวล
+closeBtn.onclick = function () {
+    // เพิ่มอนิเมชั่นขาออกด้วยการปรับ opacity
+    overlay.style.transition = "opacity 0.3s ease";
+    overlay.style.opacity = "0";
+
+    // รอให้อนิเมชั่นจบก่อนค่อยสั่ง display: none
+    setTimeout(function () {
+        overlay.style.display = 'none';
+    }, 300);
+};
+
 initializeAuth();

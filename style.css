@@ -578,3 +578,164 @@ body {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+/* พื้นหลังเต็มจอ */
+.overlay {
+    display: none;
+    /* ซ่อนไว้ก่อน */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    /* สีดำโปร่งแสง */
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* กล่องข้อความ */
+.popup-content {
+    font-family: 'Sarabun', sans-serif;
+    /* ให้ใช้ฟอนต์เดียวกับเว็บของคุณ */
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 90%;
+    /* กันไม่ให้ล้นหน้าจอมือถือ */
+    width: 400px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* ปุ่มปิด */
+#close-popup {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #D81B60;
+    color: white;
+    border: none;
+    border-radius: 11px;
+    cursor: pointer;
+    animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#close-popup:hover {
+    background-color: #AD1457;
+}
+
+/* กำหนดการเคลื่อนไหว Fade In */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* กำหนดการเคลื่อนไหว Zoom In (เด้งๆ เล็กน้อย) */
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 1. ปรับหัวข้อ (ยินดีต้อนรับ) */
+.popup-content h2 {
+    font-size: 22px;
+    /* ปรับขนาดตัวอักษร */
+    font-weight: 700;
+    /* ความหนา (ถ้าชอบหนาๆ ใช้ 700) */
+    margin-bottom: 15px;
+    /* ระยะห่างจากบรรทัดล่าง */
+    color: #333;
+    /* เปลี่ยนสีตัวอักษรได้ที่นี่ */
+}
+
+/* 2. ปรับข้อความรายละเอียด */
+.popup-content p {
+    font-size: 12px;
+    /* ขนาดฟอนต์ปกติประมาณ 16px - 18px */
+    line-height: 1.6;
+    /* ระยะห่างระหว่างบรรทัด (ช่วยให้อ่านง่ายขึ้น) */
+    color: #666;
+}
+
+/* 3. ปรับขนาดตัวอักษรบนปุ่มกด */
+#close-popup {
+    font-size: 15px;
+    /* ขนาดฟอนต์ในปุ่ม */
+    font-weight: 500;
+    padding: 12px 25px;
+    /* ถ้าฟอนต์ใหญ่ขึ้น ควรขยาย Padding ของปุ่มด้วย */
+    cursor: pointer;
+}
+
+/* จัดกลุ่มปุ่ม Social ให้เรียงลงมาหรือแยกกัน */
+.popup-social-group {
+    display: flex;
+    flex-direction: column;
+    /* เรียงเป็นแนวตั้งเพื่อให้กดง่ายในมือถือ */
+    gap: 20px !important;
+    margin: 20px 0;
+    max-width: 250px;    /* จำกัดความกว้างกลุ่มปุ่ม */
+    margin: 20px auto;   /* จัดให้อยู่กลางป๊อปอัพ */
+}
+
+/* สไตล์ปุ่ม Social ภายในป๊อปอัพ */
+.popup-social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: white !important;
+    font-weight: 500;
+    transition: transform 0.2s, opacity 0.2s;
+    margin-bottom: 15px;
+}
+
+.popup-social-btn.fb {
+    background-color: #1877F2 !important;
+    color: white !important;
+}
+
+.popup-social-btn.ig {
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888) !important;
+    color: white !important;
+}
+
+.popup-social-btn:hover {
+    transform: scale(1.02);
+    opacity: 0.9;
+    color: white;
+}
+
+.popup-social-btn:last-child {
+    margin-bottom: 0;
+}
