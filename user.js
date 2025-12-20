@@ -971,38 +971,37 @@ function initializeAuth() {
 }
 
 
-// เมื่อโหลดหน้าเว็บเสร็จ ให้แสดงป๊อปอัพ
-window.addEventListener('load', function () {
-    var popup = document.getElementById('popup-overlay');
-    if (popup) {
-        popup.style.display = 'flex';
+// ใช้ DOMContentLoaded เพื่อให้แน่ใจว่าหา Element เจอแน่นอน
+document.addEventListener('DOMContentLoaded', function () {
+    const overlay = document.getElementById('popup-overlay');
+    const closeBtn = document.getElementById('close-popup');
+
+    // 1. ตรวจสอบว่ามีป๊อปอัพอยู่ในหน้าเว็บจริงไหม
+    if (overlay) {
+        // แสดงป๊อปอัพเมื่อโหลดหน้าเว็บเสร็จ (ใช้ setTimeout เล็กน้อยเพื่อให้ Smooth)
+        setTimeout(() => {
+            overlay.style.display = 'flex';
+            overlay.style.opacity = "1";
+        }, 100);
+    }
+
+    // 2. ตรวจสอบว่ามีปุ่มปิดจริงไหม ก่อนจะสั่งงาน (แก้ Error null)
+    if (closeBtn && overlay) {
+        closeBtn.onclick = function () {
+            // เพิ่มอนิเมชั่นขาออก (Fade Out)
+            overlay.style.transition = "opacity 0.3s ease";
+            overlay.style.opacity = "0";
+
+            // รอให้อนิเมชั่นจบก่อนค่อยสั่ง display: none
+            setTimeout(function () {
+                overlay.style.display = 'none';
+            }, 300);
+        };
     }
 });
 
-// ป้องกันการ Error หากมีการเรียกใช้ฟังก์ชันปิดจากที่อื่น
-document.getElementById('close-popup').addEventListener('click', function () {
-    document.getElementById('popup-overlay').style.display = 'none';
-});
-
-const overlay = document.getElementById('popup-overlay');
-const closeBtn = document.getElementById('close-popup');
-
-// เปิดป๊อปอัพ
-window.addEventListener('load', function () {
-    overlay.style.display = 'flex';
-});
-
-// ปิดป๊อปอัพแบบนุ่มนวล
-closeBtn.onclick = function () {
-    // เพิ่มอนิเมชั่นขาออกด้วยการปรับ opacity
-    overlay.style.transition = "opacity 0.3s ease";
-    overlay.style.opacity = "0";
-
-    // รอให้อนิเมชั่นจบก่อนค่อยสั่ง display: none
-    setTimeout(function () {
-        overlay.style.display = 'none';
-    }, 300);
-};
+// ฟังก์ชันขออนุญาตแจ้งเตือน (เรียกใช้ต่อจากนี้ได้เลย)
+// askNotificationPermission();
 
 //การแจ้งเตือน//
 
@@ -1040,29 +1039,56 @@ if ('serviceWorker' in navigator) {
 }
 
 // เพิ่มโค้ดนี้ลงใน user.js ของคุณ
-const messaging = firebase.messaging();
+// ลบ const messaging = firebase.messaging(); ที่อยู่บรรทัดบนสุดทิ้งไป
 
 function setupNotifications(userId) {
-    // 1. ขออนุญาตผู้ใช้
-    Notification.requestPermission().then((permission) => {
-        if (permission === 'granted') {
-            // 2. รับ Token ของเครื่องนี้
-            messaging.getToken({ vapidKey: 'BCeN36l4aQRbRN0eaFLSoNMiE2HJ6FfqdkS8bqouxQMTZKTxG7lVWUdJbTgzny4poMDy7cg0o2Fc90hNeZqb55w' })
-                .then((currentToken) => {
-                    if (currentToken) {
-                        // 3. บันทึก Token ลงใน Realtime Database คู่กับ UserId
-                        firebase.database().ref('users/' + userId + '/fcmToken').set(currentToken);
-                        console.log('ลงทะเบียนแจ้งเตือนสำเร็จ');
-                    }
+    // 1. เช็คความพร้อมของ Firebase และ Messaging
+    if (typeof firebase !== 'undefined' && typeof firebase.messaging === 'function') {
+        const messaging = firebase.messaging();
+
+        // 2. ขออนุญาตผู้ใช้
+        Notification.requestPermission().then((permission) => {
+            if (permission === 'granted') {
+                // 3. ดึง Token (อย่าลืมเปลี่ยน VAPID_KEY เป็นรหัสของคุณจาก Firebase Console)
+                messaging.getToken({
+                    vapidKey: 'BCeN36l4aQRbRN0eaFLSoNMiE2HJ6FfqdkS8bqouxQMTZKTxG7lVWUdJbTgzny4poMDy7cg0o2Fc90hNeZqb55w'
                 })
-                .catch((err) => {
-                    console.log('เกิดข้อผิดพลาดในการรับ Token', err);
-                });
-        }
-    });
+                    .then((currentToken) => {
+                        if (currentToken) {
+                            // 4. บันทึกลง Database
+                            firebase.database().ref('users/' + userId + '/fcmToken').set(currentToken)
+                                .then(() => {
+                                    console.log('FCM Token ลงทะเบียนและบันทึกสำเร็จ');
+                                });
+                        } else {
+                            console.log('ไม่ได้รับ Token โปรดเช็คการตั้งค่าใน Firebase Console');
+                        }
+                    })
+                    .catch((err) => {
+                        console.log('Get Token Error:', err);
+                    });
+            } else {
+                console.log('ผู้ใช้ปฏิเสธการแจ้งเตือน');
+            }
+        });
+    } else {
+        console.log('Firebase Messaging SDK ยังโหลดไม่เสร็จ หรือไม่ได้ใส่ลิ้งก์ใน index.html');
+    }
 }
 
 // เรียกใช้งานฟังก์ชันนี้หลังจากผู้ใช้ Login หรือ handleAuth() สำเร็จ
 // ตัวอย่าง: setupNotifications(generatedUserId);
+
+// ลองรันคำสั่งนี้ใน Console ของเบราว์เซอร์ (F12)
+Notification.requestPermission().then(permission => {
+    if (permission === 'granted') {
+        new Notification("ทดสอบแจ้งเตือน", {
+            body: "ถ้าเห็นข้อความนี้ แสดงว่าระบบในเครื่องพร้อมทำงานแล้ว!",
+            icon: "KCปก.png"
+        });
+    } else {
+        alert("คุณยังไม่ได้อนุญาตให้แจ้งเตือนครับ");
+    }
+});
 
 initializeAuth();

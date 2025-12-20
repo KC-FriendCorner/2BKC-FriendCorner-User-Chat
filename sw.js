@@ -1,18 +1,4 @@
-// ไฟล์ sw.js
-self.addEventListener('push', function (event) {
-    const data = event.data.json();
-    const options = {
-        body: data.body,
-        icon: 'KCปก.png',
-        badge: 'KCปก.png'
-    };
-
-    event.waitUntil(
-        self.registration.showNotification(data.title, options)
-    );
-});
-
-// sw.js
+// นำเข้า Firebase SDK
 importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
 
@@ -29,14 +15,27 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
-// จัดการเมื่อมีข้อความเข้าขณะปิดหน้าเว็บ หรืออยู่หน้าอื่น
+// รับข้อความเมื่อปิดหน้าเว็บหรือเว็บอยู่เบื้องหลัง
 messaging.onBackgroundMessage((payload) => {
-    console.log('ได้รับข้อความเบื้องหลัง: ', payload);
-    const notificationTitle = payload.notification.title;
+    console.log('[sw.js] ได้รับข้อความเบื้องหลัง: ', payload);
+
+    const notificationTitle = payload.notification.title || "2BKC มีข้อความใหม่";
     const notificationOptions = {
-        body: payload.notification.body,
-        icon: '/KCปก.png' // ใส่ลิงก์รูปไอคอนเว็บคุณ
+        body: payload.notification.body || "คลิกเพื่ออ่านข้อความ",
+        icon: 'KCLOGO.png', // แนะนำเปลี่ยนจาก KCปก.png เป็น logo.png ภาษาอังกฤษ
+        badge: 'KCLOGO.png',
+        data: {
+            url: 'https://2bkc-baojai-zone.vercel.app/index.html' // หน้าที่จะเปิดเมื่อคลิก
+        }
     };
 
     self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// เมื่อผู้ใช้คลิกที่แถบแจ้งเตือน
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close();
+    event.waitUntil(
+        clients.openWindow(event.notification.data.url || '/')
+    );
 });
