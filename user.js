@@ -1004,4 +1004,65 @@ closeBtn.onclick = function () {
     }, 300);
 };
 
+//การแจ้งเตือน//
+
+function askNotificationPermission() {
+    Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+            console.log("ผู้ใช้ยอมรับการแจ้งเตือน");
+            // ส่งการแจ้งเตือนทดสอบ
+            showTestNotification();
+        }
+    });
+}
+
+function showTestNotification() {
+    const options = {
+        body: "ขอบคุณที่เปิดรับการแจ้งเตือนจาก 2BKC!",
+        icon: "KCปก.png", // ใส่รูปไอคอนเว็บคุณ
+        vibrate: [100, 50, 100],
+        data: {
+            dateOfArrival: Date.now(),
+            primaryKey: 1
+        }
+    };
+    new Notification("2BKC Baojai Zone", options);
+}
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js').then(function (registration) {
+            console.log('ServiceWorker จดทะเบียนสำเร็จ: ', registration.scope);
+        }, function (err) {
+            console.log('ServiceWorker จดทะเบียนล้มเหลว: ', err);
+        });
+    });
+}
+
+// เพิ่มโค้ดนี้ลงใน user.js ของคุณ
+const messaging = firebase.messaging();
+
+function setupNotifications(userId) {
+    // 1. ขออนุญาตผู้ใช้
+    Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+            // 2. รับ Token ของเครื่องนี้
+            messaging.getToken({ vapidKey: 'BCeN36l4aQRbRN0eaFLSoNMiE2HJ6FfqdkS8bqouxQMTZKTxG7lVWUdJbTgzny4poMDy7cg0o2Fc90hNeZqb55w' })
+                .then((currentToken) => {
+                    if (currentToken) {
+                        // 3. บันทึก Token ลงใน Realtime Database คู่กับ UserId
+                        firebase.database().ref('users/' + userId + '/fcmToken').set(currentToken);
+                        console.log('ลงทะเบียนแจ้งเตือนสำเร็จ');
+                    }
+                })
+                .catch((err) => {
+                    console.log('เกิดข้อผิดพลาดในการรับ Token', err);
+                });
+        }
+    });
+}
+
+// เรียกใช้งานฟังก์ชันนี้หลังจากผู้ใช้ Login หรือ handleAuth() สำเร็จ
+// ตัวอย่าง: setupNotifications(generatedUserId);
+
 initializeAuth();
