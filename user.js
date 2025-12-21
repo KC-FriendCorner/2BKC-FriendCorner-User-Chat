@@ -1000,105 +1000,63 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// ฟังก์ชันขออนุญาตแจ้งเตือน (เรียกใช้ต่อจากนี้ได้เลย)
-// askNotificationPermission();
+// ===============================================
+// 10. Firebase Messaging Setup (แจ้งเตือน)
+// ===============================================
 
-// 1. ลงทะเบียน Service Worker (ใช้ชื่อไฟล์ที่ถูกต้อง)
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-        // แนะนำให้ใช้ชื่อ firebase-messaging-sw.js ตามมาตรฐาน Firebase
-        navigator.serviceWorker.register('/firebase-messaging-sw.js').then(function (registration) {
-            console.log('ServiceWorker จดทะเบียนสำเร็จ: ', registration.scope);
-        }, function (err) {
-            console.log('ServiceWorker จดทะเบียนล้มเหลว: ', err);
-        });
-    });
-}
-
-// 2. ฟังก์ชันหลักสำหรับตั้งค่าการแจ้งเตือน
-function setupNotifications(userId) {
-    // เช็คความพร้อมของ Firebase Messaging
-    if (typeof firebase !== 'undefined' && typeof firebase.messaging === 'function') {
-        const messaging = firebase.messaging();
-
-        // ขออนุญาตผู้ใช้
-        Notification.requestPermission().then((permission) => {
-            if (permission === 'granted') {
-                // ดึง Token
-                messaging.getToken({
-                    vapidKey: 'BKhAJml-bMHqQT-4kaIe5Sdo4vSzlaoca2cmGmQMoFf9UKpzzuUf7rcEWJL4rIlqIArHxUZkyeRi63CnykNjLD0'
-                })
-                    .then((currentToken) => {
-                        if (currentToken) {
-                            // บันทึกลง Realtime Database
-                            firebase.database().ref('users/' + userId + '/fcmToken').set(currentToken)
-                                .then(() => {
-                                    console.log('FCM Token ลงทะเบียนและบันทึกสำเร็จ');
-                                });
-                        } else {
-                            console.log('ไม่ได้รับ Token โปรดเช็คการตั้งค่าใน Firebase Console');
-                        }
-                    })
-                    .catch((err) => {
-                        console.log('Get Token Error:', err);
-                    });
-            } else {
-                console.log('ผู้ใช้ปฏิเสธการแจ้งเตือน');
-            }
-        });
-
-        // 3. จัดการแจ้งเตือนขณะ "เปิดหน้าเว็บค้างไว้" (Foreground)
-        messaging.onMessage((payload) => {
-            console.log('ได้รับข้อความขณะเปิดหน้าเว็บ: ', payload);
-
-            // แสดง Alert หรือใช้ Custom Pop-up
-            alert(payload.notification.title + ": " + payload.notification.body);
-
-            // ถ้ามีไฟล์เสียง ให้เล่นที่นี่
-            const audio = new Audio('/notify.mp3');
-            audio.play().catch(e => console.log("Audio play failed:", e));
-        });
-
-    } else {
-        console.log('Firebase Messaging SDK ยังโหลดไม่เสร็จ');
-    }
-}
-
-// 4. เรียกใช้งานเมื่อสถานะการ Login เปลี่ยนแปลง
-firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-        setupNotifications(user.uid);
-    }
-});
+const messaging = firebase.messaging();
 
 function setupNotifications(userId) {
-    const messaging = firebase.messaging();
+    if (!userId) return;
 
-    // ขออนุญาต
+    // 1. ขอสิทธิ์แจ้งเตือน
     Notification.requestPermission().then((permission) => {
         if (permission === 'granted') {
-            // ดึง Token
+            // 2. ดึง Token
             messaging.getToken({
                 vapidKey: 'BKhAJml-bMHqQT-4kaIe5Sdo4vSzlaoca2cmGmQMoFf9UKpzzuUf7rcEWJL4rIlqIArHxUZkyeRi63CnykNjLD0'
             })
-                .then((currentToken) => {
-                    if (currentToken) {
-                        // บันทึก Token ลง Database เพื่อให้ Admin มาหยิบไปใช้ได้
-                        firebase.database().ref('users/' + userId + '/fcmToken').set(currentToken);
-                    }
-                });
+            .then((currentToken) => {
+                if (currentToken) {
+                    // 3. บันทึก Token ลง Database พาธที่แอดมินจะมาอ่าน
+                    firebase.database().ref('users/' + userId + '/fcmToken').set(currentToken)
+                        .then(() => console.log('FCM Token บันทึกสำเร็จ:', currentToken))
+                        .catch(err => console.error('บันทึก Token ล้มเหลว:', err));
+                }
+            })
+            .catch((err) => console.error('ดึง Token ผิดพลาด:', err));
+        } else {
+            console.warn('ผู้ใช้ปฏิเสธการแจ้งเตือน');
         }
-    });
-
-    // รับข้อความขณะเปิดหน้าแชทค้างไว้
-    messaging.onMessage((payload) => {
-        alert(payload.notification.title + ": " + payload.notification.body);
     });
 }
 
-// เรียกใช้เมื่อ Login สำเร็จ
-firebase.auth().onAuthStateChanged((user) => {
-    if (user) setupNotifications(user.uid);
+// 4. จัดการแจ้งเตือนขณะเปิดหน้าเว็บค้างไว้ (Foreground)
+messaging.onMessage((payload) => {
+    console.log('ได้รับข้อความขณะเปิดหน้าเว็บ:', payload);
+    
+    const notificationTitle = payload.notification.title;
+    const notificationOptions = {
+        body: payload.notification.body,
+        icon: '/KCLOGO.png', // มั่นใจว่าไฟล์นี้มีอยู่ในโฟลเดอร์หลัก
+    };
+
+    // แสดงแจ้งเตือนแบบ Banner แม้จะเปิดเว็บอยู่
+    if (Notification.permission === 'granted') {
+        new Notification(notificationTitle, notificationOptions);
+    }
+
+    // เล่นเสียงแจ้งเตือน
+    const audio = new Audio('/notify.mp3');
+    audio.play().catch(e => console.warn("Audio play blocked:", e));
+});
+
+// 5. ผูกเข้ากับระบบ Auth (เรียกเพียงที่เดียว)
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        currentUserId = user.uid;
+        setupNotifications(user.uid);
+    }
 });
 
 initializeAuth();
