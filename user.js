@@ -1071,4 +1071,34 @@ firebase.auth().onAuthStateChanged((user) => {
     }
 });
 
+function setupNotifications(userId) {
+    const messaging = firebase.messaging();
+
+    // ขออนุญาต
+    Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+            // ดึง Token
+            messaging.getToken({
+                vapidKey: 'BKhAJml-bMHqQT-4kaIe5Sdo4vSzlaoca2cmGmQMoFf9UKpzzuUf7rcEWJL4rIlqIArHxUZkyeRi63CnykNjLD0'
+            })
+                .then((currentToken) => {
+                    if (currentToken) {
+                        // บันทึก Token ลง Database เพื่อให้ Admin มาหยิบไปใช้ได้
+                        firebase.database().ref('users/' + userId + '/fcmToken').set(currentToken);
+                    }
+                });
+        }
+    });
+
+    // รับข้อความขณะเปิดหน้าแชทค้างไว้
+    messaging.onMessage((payload) => {
+        alert(payload.notification.title + ": " + payload.notification.body);
+    });
+}
+
+// เรียกใช้เมื่อ Login สำเร็จ
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) setupNotifications(user.uid);
+});
+
 initializeAuth();
