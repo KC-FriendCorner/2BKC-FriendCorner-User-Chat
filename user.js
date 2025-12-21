@@ -1003,34 +1003,11 @@ document.addEventListener('DOMContentLoaded', function () {
 // ฟังก์ชันขออนุญาตแจ้งเตือน (เรียกใช้ต่อจากนี้ได้เลย)
 // askNotificationPermission();
 
-//การแจ้งเตือน//
-
-function askNotificationPermission() {
-    Notification.requestPermission().then((permission) => {
-        if (permission === "granted") {
-            console.log("ผู้ใช้ยอมรับการแจ้งเตือน");
-            // ส่งการแจ้งเตือนทดสอบ
-            showTestNotification();
-        }
-    });
-}
-
-function showTestNotification() {
-    const options = {
-        body: "ขอบคุณที่เปิดรับการแจ้งเตือนจาก 2BKC!",
-        icon: "KCปก.png", // ใส่รูปไอคอนเว็บคุณ
-        vibrate: [100, 50, 100],
-        data: {
-            dateOfArrival: Date.now(),
-            primaryKey: 1
-        }
-    };
-    new Notification("2BKC Baojai Zone", options);
-}
-
+// 1. ลงทะเบียน Service Worker (ใช้ชื่อไฟล์ที่ถูกต้อง)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/sw.js').then(function (registration) {
+        // แนะนำให้ใช้ชื่อ firebase-messaging-sw.js ตามมาตรฐาน Firebase
+        navigator.serviceWorker.register('/firebase-messaging-sw.js').then(function (registration) {
             console.log('ServiceWorker จดทะเบียนสำเร็จ: ', registration.scope);
         }, function (err) {
             console.log('ServiceWorker จดทะเบียนล้มเหลว: ', err);
@@ -1038,24 +1015,22 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// เพิ่มโค้ดนี้ลงใน user.js ของคุณ
-// ลบ const messaging = firebase.messaging(); ที่อยู่บรรทัดบนสุดทิ้งไป
-
+// 2. ฟังก์ชันหลักสำหรับตั้งค่าการแจ้งเตือน
 function setupNotifications(userId) {
-    // 1. เช็คความพร้อมของ Firebase และ Messaging
+    // เช็คความพร้อมของ Firebase Messaging
     if (typeof firebase !== 'undefined' && typeof firebase.messaging === 'function') {
         const messaging = firebase.messaging();
 
-        // 2. ขออนุญาตผู้ใช้
+        // ขออนุญาตผู้ใช้
         Notification.requestPermission().then((permission) => {
             if (permission === 'granted') {
-                // 3. ดึง Token (อย่าลืมเปลี่ยน VAPID_KEY เป็นรหัสของคุณจาก Firebase Console)
+                // ดึง Token
                 messaging.getToken({
                     vapidKey: 'BKhAJml-bMHqQT-4kaIe5Sdo4vSzlaoca2cmGmQMoFf9UKpzzuUf7rcEWJL4rIlqIArHxUZkyeRi63CnykNjLD0'
                 })
                     .then((currentToken) => {
                         if (currentToken) {
-                            // 4. บันทึกลง Database
+                            // บันทึกลง Realtime Database
                             firebase.database().ref('users/' + userId + '/fcmToken').set(currentToken)
                                 .then(() => {
                                     console.log('FCM Token ลงทะเบียนและบันทึกสำเร็จ');
@@ -1071,25 +1046,29 @@ function setupNotifications(userId) {
                 console.log('ผู้ใช้ปฏิเสธการแจ้งเตือน');
             }
         });
+
+        // 3. จัดการแจ้งเตือนขณะ "เปิดหน้าเว็บค้างไว้" (Foreground)
+        messaging.onMessage((payload) => {
+            console.log('ได้รับข้อความขณะเปิดหน้าเว็บ: ', payload);
+
+            // แสดง Alert หรือใช้ Custom Pop-up
+            alert(payload.notification.title + ": " + payload.notification.body);
+
+            // ถ้ามีไฟล์เสียง ให้เล่นที่นี่
+            const audio = new Audio('/notify.mp3');
+            audio.play().catch(e => console.log("Audio play failed:", e));
+        });
+
     } else {
-        console.log('Firebase Messaging SDK ยังโหลดไม่เสร็จ หรือไม่ได้ใส่ลิ้งก์ใน index.html');
+        console.log('Firebase Messaging SDK ยังโหลดไม่เสร็จ');
     }
 }
 
-// เรียกใช้งานฟังก์ชันนี้หลังจากผู้ใช้ Login หรือ handleAuth() สำเร็จ
-// ตัวอย่าง: setupNotifications(generatedUserId);
-
+// 4. เรียกใช้งานเมื่อสถานะการ Login เปลี่ยนแปลง
 firebase.auth().onAuthStateChanged((user) => {
     if (user) {
-        // ต้องเรียกฟังก์ชันนี้เพื่อให้ระบบเริ่มขอ Token
         setupNotifications(user.uid);
     }
-});
-
-messaging.onMessage((payload) => {
-    console.log('Message received. ', payload);
-    // เขียนโค้ดแสดง Pop-up หรือเล่นไฟล์เสียง notify.mp3 ที่นี่
-    alert(payload.notification.title + ": " + payload.notification.body);
 });
 
 initializeAuth();
