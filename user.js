@@ -1086,4 +1086,10 @@ firebase.auth().onAuthStateChanged((user) => {
     }
 });
 
+messaging.onMessage((payload) => {
+    console.log('Message received. ', payload);
+    // เขียนโค้ดแสดง Pop-up หรือเล่นไฟล์เสียง notify.mp3 ที่นี่
+    alert(payload.notification.title + ": " + payload.notification.body);
+});
+
 initializeAuth();

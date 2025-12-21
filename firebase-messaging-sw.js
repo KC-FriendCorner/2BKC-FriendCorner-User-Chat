@@ -29,7 +29,7 @@ messaging.onBackgroundMessage(function(payload) {
     const notificationTitle = payload.notification.title;
     const notificationOptions = {
         body: payload.notification.body,
-        icon: '/KCปก1.png', // 🚩 [CONFIG] คุณอาจจะใช้ไฟล์ภาพโลโก้ที่คุณมี เช่น 'KC.png' หรือ 'FriendCorner.jpg'
+        icon: '/KCLOGO.png', // 🚩 [CONFIG] คุณอาจจะใช้ไฟล์ภาพโลโก้ที่คุณมี เช่น 'KC.png' หรือ 'FriendCorner.jpg'
         data: payload.data
     };
 
