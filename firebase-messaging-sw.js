@@ -7,7 +7,7 @@ importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js')
 // 🚩 [CONFIG] ใช้ข้อมูล Firebase Project เดียวกันกับ user.js
 const firebaseConfig = {
     // 🔑 [สำคัญ] ต้องใช้ Config ที่ถูกต้องจาก user.js หรือ firebase.json
-    apiKey: "AIzaSyCs3_LcJN5RfOIo9jZ4fnz1CBl8hXqfvig", 
+    apiKey: "AIzaSyCs3_LcJN5RfOIo9jZ4fnz1CBl8hXqfvig",
     authDomain: "kc-tobe-friendcorner-21655.firebaseapp.com",
     databaseURL: "https://kc-tobe-friendcorner-21655-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "kc-tobe-friendcorner-21655",
@@ -23,15 +23,16 @@ if (!firebase.apps.length) {
 const messaging = firebase.messaging();
 
 // 🔑 จัดการเมื่อได้รับข้อความแจ้งเตือนในพื้นหลัง (Background)
-messaging.onBackgroundMessage(function(payload) {
-    console.log('[firebase-messaging-sw.js] Received background message ', payload);
+// ใน firebase-messaging-sw.js
+messaging.onBackgroundMessage((payload) => {
+    console.log('ได้รับข้อความขณะอยู่เบื้องหลัง:', payload);
 
     const notificationTitle = payload.notification.title;
     const notificationOptions = {
         body: payload.notification.body,
-        icon: '/KCLOGO.png', // 🚩 [CONFIG] คุณอาจจะใช้ไฟล์ภาพโลโก้ที่คุณมี เช่น 'KC.png' หรือ 'FriendCorner.jpg'
-        data: payload.data
+        icon: '/KC.png', // ตรวจสอบว่า Path รูปถูกต้อง
+        data: { url: payload.data.url }
     };
 
-    return self.registration.showNotification(notificationTitle, notificationOptions);
+    self.registration.showNotification(notificationTitle, notificationOptions);
 });
