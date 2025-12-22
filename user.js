@@ -1309,4 +1309,33 @@ async function notifyAdmin(adminUid, messageText) {
     });
 }
 
+// ในไฟล์ user.js
+async function notifyAdmin(messageText) {
+    const targetAdminUid = "o139Nm6N3wSW25fCtAzwf2ymfSm2"; // UID แอดมินที่คุณใช้ทดสอบ
+
+    // 1. เข้าไปดึงจาก admin_metadata (ต้องตรงกับที่แอดมินบันทึก)
+    const adminTokensRef = firebase.database().ref(`admin_metadata/${targetAdminUid}`);
+    const snapshot = await adminTokensRef.once('value');
+
+    if (!snapshot.exists()) {
+        console.warn("⚠️ แอดมินไม่มี Token ในระบบ (เช็คใน Database ว่ามีโฟลเดอร์ admin_metadata หรือยัง)");
+        return;
+    }
+
+    // 2. ถ้ามี Token ให้วนลูปส่งหาทุกเครื่องของแอดมินคนนั้น
+    snapshot.forEach((childSnapshot) => {
+        const token = childSnapshot.val();
+        // ส่งไปที่ API Vercel ของคุณ
+        fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                token: token,
+                title: 'มีข้อความใหม่! 💬',
+                body: messageText
+            })
+        });
+    });
+}
+
 initializeAuth();
