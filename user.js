@@ -1312,7 +1312,7 @@ async function notifyAdmin(adminUid, messageText) {
 // ในไฟล์ user.js
 async function notifyAdmin(messageText) {
     const adminUid = "o139Nm6N3wSW25fCtAzwf2ymfSm2"; // UID ของแอดมิน
-    const adminRef = firebase.database().ref(`admin_tokens/${adminUid}`);
+    const adminRef = firebase.database().ref(`admin_metadata/${adminUid}`);
 
     const snapshot = await adminRef.once('value');
     if (snapshot.exists()) {
