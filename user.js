@@ -1080,7 +1080,7 @@ function handleUserSendMessage(messageText) {
     if (!user || !messageText) return; //
 
     const userId = user.uid;
-    const userName = user.displayName || "ลูกค้าทั่วไป"; //
+    const userName = user.displayName || "anonymous user"; //
 
     // 1. บันทึกข้อความลง Database ใน messages/$userId
     const chatRef = firebase.database().ref(`messages/${userId}`).push();
@@ -1123,6 +1123,15 @@ function handleUserSendMessage(messageText) {
         })
         .catch(err => {
             console.error("เกิดข้อผิดพลาดในระบบส่งข้อความ:", err); //
+        });
+}
+
+// เพิ่มโค้ดนี้ใน user.js ด้วย
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/firebase-messaging-sw.js')
+        .then((registration) => {
+            console.log('✅ User Service Worker Registered');
+            firebase.messaging().useServiceWorker(registration);
         });
 }
 
