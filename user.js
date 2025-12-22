@@ -1103,4 +1103,61 @@ function handleUserSendMessage(messageText) {
     });
 }
 
+function notifyAdminOfNewMessage(text) {
+    firebase.database().ref('admin_metadata/fcmToken').once('value').then(snap => {
+        const adminToken = snap.val();
+        if (adminToken) {
+            fetch('/api/send-notify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: adminToken,
+                    title: 'มีข้อความใหม่เข้าครับแอด! 📩',
+                    body: text
+                })
+            });
+        }
+    });
+}
+
+// user.js
+
+function handleUserSendMessage(messageText) {
+    const user = firebase.auth().currentUser;
+    if (!user || !messageText) return;
+
+    const userId = user.uid;
+    const userName = user.displayName || "anonymous user";
+
+    // 1. บันทึกข้อความลง Database ปกติใน messages/$userId
+    const chatRef = firebase.database().ref(`messages/${userId}`).push();
+    chatRef.set({
+        sender: 'user',
+        text: messageText,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    })
+        .then(() => {
+            // 2. ดึง Token ของ Admin จาก admin_metadata
+            return firebase.database().ref('admin_metadata/fcmToken').once('value');
+        })
+        .then((snapshot) => {
+            const adminToken = snapshot.val();
+            if (adminToken) {
+                // 3. ยิง API ไปยัง Vercel เพื่อส่งแจ้งเตือนหาแอดมิน
+                fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: adminToken,
+                        title: `📩 ข้อความใหม่จาก ${userName}`,
+                        body: messageText,
+                        recipientUid: 'admin_team', // เพื่อป้องกันแจ้งเตือนเด้งซ้ำ (Collapse Key)
+                        image: user.photoURL || 'https://2bkc-baojai-zone.vercel.app/KCLOGO.png'
+                    })
+                });
+            }
+        })
+        .catch(err => console.error("Error in user send message:", err));
+}
+
 initializeAuth();
