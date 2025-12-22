@@ -1031,24 +1031,34 @@ function setupNotifications(userId) {
     });
 }
 
+// user.js
+
 // 4. จัดการแจ้งเตือนขณะเปิดหน้าเว็บค้างไว้ (Foreground)
 messaging.onMessage((payload) => {
-    console.log('ได้รับข้อความขณะเปิดหน้าเว็บ:', payload);
+    console.log('ได้รับข้อความใน Foreground:', payload);
     
-    const notificationTitle = payload.notification.title;
-    const notificationOptions = {
-        body: payload.notification.body,
-        icon: '/KCปก1.png', // มั่นใจว่าไฟล์นี้มีอยู่ในโฟลเดอร์หลัก
-    };
+    const { title, body } = payload.notification;
 
-    // แสดงแจ้งเตือนแบบ Banner แม้จะเปิดเว็บอยู่
-    if (Notification.permission === 'granted') {
-        new Notification(notificationTitle, notificationOptions);
-    }
-
-    // เล่นเสียงแจ้งเตือน
+    // แทนที่จะใช้ new Notification (ซึ่งมักจะเด้งซ้ำกับระบบ)
+    // แนะนำให้ใช้การแจ้งเตือนภายในหน้าเว็บ (Custom UI) หรือเล่นเสียงอย่างเดียว
+    
+    // 1. เล่นเสียงแจ้งเตือน (สำคัญมากสำหรับ Foreground)
     const audio = new Audio('/notify.mp3');
-    audio.play().catch(e => console.warn("Audio play blocked:", e));
+    audio.play().catch(e => console.warn("ไม่สามารถเล่นเสียงได้เนื่องจากนโยบายเบราว์เซอร์:", e));
+
+    // 2. แสดงแจ้งเตือนแบบ Banner (เฉพาะถ้าต้องการจริงๆ)
+    // ให้เช็คก่อนว่า Document ถูกซ่อนอยู่หรือไม่ (ถ้าเปิดหน้าเว็บดูอยู่ ไม่ต้องเด้ง Banner ให้เกะกะ)
+    if (document.hidden && Notification.permission === 'granted') {
+        new Notification(title, {
+            body: body,
+            icon: '/KCปก1.png'
+        });
+    } else {
+        // ถ้าผู้ใช้กำลังดูหน้าเว็บอยู่ ให้ใช้การแจ้งเตือนแบบ Alert หรือ Toast ในหน้าเว็บแทน
+        // ตัวอย่าง: alert(title + ": " + body); 
+        // หรือถ้ามีระบบ Toast UI ให้เรียกใช้ที่นี่
+        console.log("ผู้ใช้กำลังดูหน้าเว็บอยู่ แสดงผลผ่าน UI ภายในหน้าเว็บ");
+    }
 });
 
 // 5. ผูกเข้ากับระบบ Auth (เรียกเพียงที่เดียว)
