@@ -1038,7 +1038,7 @@ messaging.onMessage((payload) => {
     const notificationTitle = payload.notification.title;
     const notificationOptions = {
         body: payload.notification.body,
-        icon: '/KCLOGO.png', // มั่นใจว่าไฟล์นี้มีอยู่ในโฟลเดอร์หลัก
+        icon: '/KCปก1.png', // มั่นใจว่าไฟล์นี้มีอยู่ในโฟลเดอร์หลัก
     };
 
     // แสดงแจ้งเตือนแบบ Banner แม้จะเปิดเว็บอยู่
