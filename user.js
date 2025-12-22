@@ -1210,8 +1210,8 @@ function userSendMessage(text) {
 }
 
 function saveTokenToDatabase(uid, token, role) {
-    // แยกเก็บตามบทบาท (admin_tokens หรือ user_tokens) และตามด้วย UID
-    const path = (role === 'admin') ? `admin_tokens/${uid}` : `user_tokens/${uid}`;
+    // แยกเก็บตามบทบาท (admin_metadata หรือ user_tokens) และตามด้วย UID
+    const path = (role === 'admin') ? `admin_metadata/${uid}` : `user_tokens/${uid}`;
 
     firebase.database().ref(path).set({
         fcmToken: token,
@@ -1239,7 +1239,7 @@ function setupUserNotification(userUid) {
 
 function notifyAdmin(adminUid, messageText) {
     // ดึงรายการ Token ทั้งหมดของแอดมิน UID นี้
-    firebase.database().ref(`admin_tokens/${adminUid}`).once('value').then(snapshot => {
+    firebase.database().ref(`admin_metadata/${adminUid}`).once('value').then(snapshot => {
         if (snapshot.exists()) {
             snapshot.forEach(childSnapshot => {
                 const token = childSnapshot.val();
@@ -1280,7 +1280,7 @@ function handleUserSendMessage() {
 }
 
 async function notifyAdmin(adminUid, messageText) {
-    const adminTokensRef = firebase.database().ref(`admin_tokens/${adminUid}`);
+    const adminTokensRef = firebase.database().ref(`admin_metadata/${adminUid}`);
     const snapshot = await adminTokensRef.once('value');
 
     if (!snapshot.exists()) {
