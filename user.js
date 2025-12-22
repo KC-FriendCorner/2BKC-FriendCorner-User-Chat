@@ -864,9 +864,9 @@ function sendMessage() {
     const msg = chatInput.value.trim();
     if (!msg || !currentChatId) return;
 
-    const timestamp = TIMESTAMP;
+    const timestamp = firebase.database.ServerValue.TIMESTAMP; // ใช้ค่ามาตรฐานของ Firebase
 
-    // อัปเดตข้อมูลแชทหลัก
+    // 1. อัปเดตข้อมูลแชทหลัก
     database.ref(`${CHATS_PATH}/${currentChatId}`).update({
         lastActivity: timestamp,
         lastMessage: {
@@ -878,14 +878,45 @@ function sendMessage() {
         status: 'active'
     });
 
-    // เขียนข้อความลงใน messages sub-collection
+    // 2. เขียนข้อความลงใน messages sub-collection
     database.ref(`${CHATS_PATH}/${currentChatId}/messages`).push({
         sender: 'user',
         text: msg,
         timestamp: timestamp
+    }).then(() => {
+        // --- 🚩 [เพิ่มตรงนี้] ส่งแจ้งเตือนไปหาแอดมินทันทีเมื่อบันทึกสำเร็จ ---
+        notifyAdmin(msg);
     });
 
     chatInput.value = '';
+}
+
+// 3. ฟังก์ชันสำหรับยิงแจ้งเตือน (วางไว้ข้างนอกหรือในไฟล์เดียวกัน)
+function notifyAdmin(messageText) {
+    // ไปดึง Token ที่แอดมินฝากไว้ในระบบ
+    database.ref('admin_metadata/fcmToken').once('value').then(snap => {
+        const adminToken = snap.val();
+
+        if (adminToken) {
+            fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: adminToken,
+                    title: 'มีข้อความใหม่จากผู้ใช้! 📩',
+                    body: messageText,
+                    data: {
+                        url: 'https://2bkc-baojai-zone-admin.vercel.app/' // URL หน้าแอดมิน
+                    }
+                })
+            })
+                .then(res => res.json())
+                .then(data => console.log('✅ แจ้งเตือนแอดมินสำเร็จ:', data))
+                .catch(err => console.error('❌ แจ้งเตือนแอดมินล้มเหลว:', err));
+        } else {
+            console.warn("ไม่พบ Token แอดมินใน Database (admin_metadata/fcmToken)");
+        }
+    });
 }
 
 function deleteMessage(chatId, messageId) {
@@ -1126,13 +1157,126 @@ function handleUserSendMessage(messageText) {
         });
 }
 
-// เพิ่มโค้ดนี้ใน user.js ด้วย
+// แก้ไขจุดที่ลงทะเบียน Service Worker ใน user.js
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/firebase-messaging-sw.js')
         .then((registration) => {
             console.log('✅ User Service Worker Registered');
-            firebase.messaging().useServiceWorker(registration);
+            // 🚩 ตัดบรรทัด firebase.messaging().useServiceWorker(registration) ออก
+            // เพราะ Firebase SDK v8 จะจัดการเชื่อมต่อกับไฟล์ที่ชื่อ firebase-messaging-sw.js ให้เองอัตโนมัติ
+        })
+        .catch((error) => {
+            console.error('❌ Service Worker Registration Failed:', error);
         });
+}
+// 2. ฟังก์ชันแจ้งเตือนหาแอดมิน
+function notifyAdmin(msg) {
+    // ดึง Token แอดมินมาล่าสุด
+    database.ref('admin_metadata/fcmToken').once('value').then(snap => {
+        const adminToken = snap.val();
+        if (adminToken) {
+            fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: adminToken,
+                    title: 'มีข้อความใหม่จากผู้ใช้! 📩',
+                    body: msg,
+                    data: { url: 'https://2bkc-baojai-zone-admin.vercel.app/' }
+                })
+            }).catch(err => console.error("API Error:", err));
+        }
+    });
+}
+
+// เมื่อ User ส่งข้อความ
+function userSendMessage(text) {
+    // 1. บันทึกข้อความลง Database ปกติ
+    // 2. ดึง Token แอดมินมาแจ้งเตือน
+    firebase.database().ref('admin_metadata/fcmToken').once('value').then(snap => {
+        const adminToken = snap.val();
+        if (adminToken) {
+            // ยิงไปที่ API ตัวเดิม (Vercel)
+            fetch('https://your-vercel-api/api/send-notify', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: adminToken,
+                    title: 'มีข้อความใหม่จากผู้ใช้! 📩',
+                    body: text
+                })
+            });
+        }
+    });
+}
+
+function saveTokenToDatabase(uid, token, role) {
+    // แยกเก็บตามบทบาท (admin_tokens หรือ user_tokens) และตามด้วย UID
+    const path = (role === 'admin') ? `admin_tokens/${uid}` : `user_tokens/${uid}`;
+
+    firebase.database().ref(path).set({
+        fcmToken: token,
+        deviceType: "web",
+        lastUpdated: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        console.log(`✅ บันทึก Token สำหรับ ${role} (UID: ${uid}) เรียบร้อย`);
+    });
+}
+
+function setupUserNotification(userUid) {
+    messaging.getToken({
+        vapidKey: 'BKhAJml-bMHqQT-4kaIe5Sdo4vSzlaoca2cmGmQMoFf9UKpzzuUf7rcEWJL4rIlqIArHxUZkyeRi63CnykNjLD0'
+    })
+        .then((token) => {
+            if (token) {
+                // ✅ บันทึกแยก Path: สำหรับ User ทั่วไป
+                firebase.database().ref(`users/${userUid}`).update({
+                    fcmToken: token,
+                    lastUpdated: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+        });
+}
+
+function notifyAdmin(adminUid, messageText) {
+    // ดึงรายการ Token ทั้งหมดของแอดมิน UID นี้
+    firebase.database().ref(`admin_tokens/${adminUid}`).once('value').then(snapshot => {
+        if (snapshot.exists()) {
+            snapshot.forEach(childSnapshot => {
+                const token = childSnapshot.val();
+
+                // ส่งแจ้งเตือนไปยังแต่ละ Token (แต่ละเครื่อง)
+                fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: token,
+                        title: 'มีข้อความใหม่ถึงแอดมิน ✨',
+                        body: messageText
+                    })
+                })
+                    .then(res => console.log("ส่งหาเครื่องแอดมินสำเร็จหนึ่งเครื่อง"))
+                    .catch(err => console.error("เครื่องนี้ส่งไม่ไป:", err));
+            });
+        }
+    });
+}
+
+// ฟังก์ชันที่ผู้ใช้เรียกเมื่อกดปุ่ม "ส่ง"
+function handleUserSendMessage() {
+    const text = document.getElementById('chatInput').value;
+    const adminUid = "UID_ของแอดมิน_ที่คุณต้องการแจ้ง"; // ปกติจะได้มาจากการ query หรือตั้งค่าไว้
+
+    // 1. เก็บข้อความลง DB (ตามปกติที่คุณทำอยู่)
+    const newMsgRef = firebase.database().ref(`messages/${userUid}`).push();
+    newMsgRef.set({
+        sender: 'user',
+        text: text,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        // 2. 🔥 เพิ่มส่วนนี้: เรียกแจ้งเตือนแอดมิน
+        // ฟังก์ชัน notifyAdmin ที่คุณก๊อปปี้ไปก่อนหน้านี้
+        notifyAdmin(adminUid, text);
+    });
 }
 
 initializeAuth();
