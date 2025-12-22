@@ -1279,4 +1279,34 @@ function handleUserSendMessage() {
     });
 }
 
+async function notifyAdmin(adminUid, messageText) {
+    const adminTokensRef = firebase.database().ref(`admin_tokens/${adminUid}`);
+    const snapshot = await adminTokensRef.once('value');
+
+    if (!snapshot.exists()) {
+        console.warn("แอดมินไม่มี Token ในระบบ");
+        return;
+    }
+
+    // วนลูปส่งหาทุกเครื่องที่แอดมินคนนั้นล็อกอินไว้
+    snapshot.forEach((child) => {
+        const token = child.val();
+
+        fetch('https://your-domain.vercel.app/api/send-notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                token: token,
+                title: 'มีข้อความใหม่จากผู้ใช้ 📩',
+                body: messageText,
+                recipientUid: adminUid,
+                link: 'https://2bkc-baojai-zone-admin.vercel.app/' // ลิงก์สำหรับแอดมิน
+            })
+        })
+            .then(res => res.json())
+            .then(data => console.log("แจ้งเตือนแอดมินสำเร็จ:", data))
+            .catch(err => console.error("แจ้งเตือนล้มเหลว:", err));
+    });
+}
+
 initializeAuth();
