@@ -1016,15 +1016,15 @@ function setupNotifications(userId) {
             messaging.getToken({
                 vapidKey: 'BKhAJml-bMHqQT-4kaIe5Sdo4vSzlaoca2cmGmQMoFf9UKpzzuUf7rcEWJL4rIlqIArHxUZkyeRi63CnykNjLD0'
             })
-            .then((currentToken) => {
-                if (currentToken) {
-                    // 3. บันทึก Token ลง Database พาธที่แอดมินจะมาอ่าน
-                    firebase.database().ref('users/' + userId + '/fcmToken').set(currentToken)
-                        .then(() => console.log('FCM Token บันทึกสำเร็จ:', currentToken))
-                        .catch(err => console.error('บันทึก Token ล้มเหลว:', err));
-                }
-            })
-            .catch((err) => console.error('ดึง Token ผิดพลาด:', err));
+                .then((currentToken) => {
+                    if (currentToken) {
+                        // 3. บันทึก Token ลง Database พาธที่แอดมินจะมาอ่าน
+                        firebase.database().ref('users/' + userId + '/fcmToken').set(currentToken)
+                            .then(() => console.log('FCM Token บันทึกสำเร็จ:', currentToken))
+                            .catch(err => console.error('บันทึก Token ล้มเหลว:', err));
+                    }
+                })
+                .catch((err) => console.error('ดึง Token ผิดพลาด:', err));
         } else {
             console.warn('ผู้ใช้ปฏิเสธการแจ้งเตือน');
         }
@@ -1036,12 +1036,12 @@ function setupNotifications(userId) {
 // 4. จัดการแจ้งเตือนขณะเปิดหน้าเว็บค้างไว้ (Foreground)
 messaging.onMessage((payload) => {
     console.log('ได้รับข้อความใน Foreground:', payload);
-    
+
     const { title, body } = payload.notification;
 
     // แทนที่จะใช้ new Notification (ซึ่งมักจะเด้งซ้ำกับระบบ)
     // แนะนำให้ใช้การแจ้งเตือนภายในหน้าเว็บ (Custom UI) หรือเล่นเสียงอย่างเดียว
-    
+
     // 1. เล่นเสียงแจ้งเตือน (สำคัญมากสำหรับ Foreground)
     const audio = new Audio('/notify.mp3');
     audio.play().catch(e => console.warn("ไม่สามารถเล่นเสียงได้เนื่องจากนโยบายเบราว์เซอร์:", e));
@@ -1068,5 +1068,39 @@ auth.onAuthStateChanged((user) => {
         setupNotifications(user.uid);
     }
 });
+
+//แจ้งเตือนแอดมิน//
+
+// เพิ่ม/แก้ไขฟังก์ชันใน user.js
+function handleUserSendMessage(messageText) {
+    const userId = firebase.auth().currentUser.uid;
+    const userName = firebase.auth().currentUser.displayName || "ผู้ใช้ทั่วไป";
+
+    // 1. บันทึกข้อความลง Database ปกติ
+    const chatRef = firebase.database().ref(`messages/${userId}`).push();
+    chatRef.set({
+        sender: 'user',
+        text: messageText,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        // 2. ดึง Token ของ Admin มาเพื่อส่งแจ้งเตือน
+        return firebase.database().ref('admin_metadata/fcmToken').once('value');
+    }).then((snapshot) => {
+        const adminToken = snapshot.val();
+        if (adminToken) {
+            // 3. เรียก API ตัวเดิมบน Vercel
+            fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: adminToken,
+                    title: `ข้อความใหม่จาก ${userName} 📩`,
+                    body: messageText,
+                    recipientUid: 'admin' // ใช้เพื่อจัดกลุ่มแจ้งเตือนไม่ให้เด้งซ้ำ
+                })
+            });
+        }
+    });
+}
 
 initializeAuth();
