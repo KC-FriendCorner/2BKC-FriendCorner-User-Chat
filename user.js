@@ -1071,65 +1071,18 @@ auth.onAuthStateChanged((user) => {
 
 //แจ้งเตือนแอดมิน//
 
-// เพิ่ม/แก้ไขฟังก์ชันใน user.js
-function handleUserSendMessage(messageText) {
-    const userId = firebase.auth().currentUser.uid;
-    const userName = firebase.auth().currentUser.displayName || "ผู้ใช้ทั่วไป";
-
-    // 1. บันทึกข้อความลง Database ปกติ
-    const chatRef = firebase.database().ref(`messages/${userId}`).push();
-    chatRef.set({
-        sender: 'user',
-        text: messageText,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => {
-        // 2. ดึง Token ของ Admin มาเพื่อส่งแจ้งเตือน
-        return firebase.database().ref('admin_metadata/fcmToken').once('value');
-    }).then((snapshot) => {
-        const adminToken = snapshot.val();
-        if (adminToken) {
-            // 3. เรียก API ตัวเดิมบน Vercel
-            fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    token: adminToken,
-                    title: `ข้อความใหม่จาก ${userName} 📩`,
-                    body: messageText,
-                    recipientUid: 'admin' // ใช้เพื่อจัดกลุ่มแจ้งเตือนไม่ให้เด้งซ้ำ
-                })
-            });
-        }
-    });
-}
-
-function notifyAdminOfNewMessage(text) {
-    firebase.database().ref('admin_metadata/fcmToken').once('value').then(snap => {
-        const adminToken = snap.val();
-        if (adminToken) {
-            fetch('/api/send-notify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    token: adminToken,
-                    title: 'มีข้อความใหม่เข้าครับแอด! 📩',
-                    body: text
-                })
-            });
-        }
-    });
-}
-
-// user.js
-
+/**
+ * ฟังก์ชันส่งข้อความจากฝั่ง User และแจ้งเตือนไปยัง Admin
+ * (รวมข้อดีเรื่อง Image Support, Error Handling และ URL แม่นยำ)
+ */
 function handleUserSendMessage(messageText) {
     const user = firebase.auth().currentUser;
-    if (!user || !messageText) return;
+    if (!user || !messageText) return; //
 
     const userId = user.uid;
-    const userName = user.displayName || "anonymous user";
+    const userName = user.displayName || "ลูกค้าทั่วไป"; //
 
-    // 1. บันทึกข้อความลง Database ปกติใน messages/$userId
+    // 1. บันทึกข้อความลง Database ใน messages/$userId
     const chatRef = firebase.database().ref(`messages/${userId}`).push();
     chatRef.set({
         sender: 'user',
@@ -1137,13 +1090,19 @@ function handleUserSendMessage(messageText) {
         timestamp: firebase.database.ServerValue.TIMESTAMP
     })
         .then(() => {
-            // 2. ดึง Token ของ Admin จาก admin_metadata
+            console.log("บันทึกแชทสำเร็จ กำลังดึง Token ของแอดมิน..."); //
+
+            // 2. ดึง Token ของ Admin จาก admin_metadata (พาธกลางที่แอดมินฝากไว้)
             return firebase.database().ref('admin_metadata/fcmToken').once('value');
         })
         .then((snapshot) => {
-            const adminToken = snapshot.val();
+            const adminToken = snapshot.val(); //
+
             if (adminToken) {
+                console.log("พบ Admin Token กำลังส่งแจ้งเตือน..."); //
+
                 // 3. ยิง API ไปยัง Vercel เพื่อส่งแจ้งเตือนหาแอดมิน
+                // ใช้ URL เต็ม และใส่รูปภาพเพื่อความสวยงาม
                 fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1151,13 +1110,20 @@ function handleUserSendMessage(messageText) {
                         token: adminToken,
                         title: `📩 ข้อความใหม่จาก ${userName}`,
                         body: messageText,
-                        recipientUid: 'admin_team', // เพื่อป้องกันแจ้งเตือนเด้งซ้ำ (Collapse Key)
-                        image: user.photoURL || 'https://2bkc-baojai-zone.vercel.app/KCLOGO.png'
+                        recipientUid: 'admin_team', // จัดกลุ่มแจ้งเตือนไม่ให้เด้งซ้ำซ้อน
+                        image: user.photoURL || 'https://2bkc-baojai-zone.vercel.app/KCLOGO.png' // ใส่รูปโปรไฟล์
                     })
-                });
+                })
+                    .then(res => res.json())
+                    .then(data => console.log("ผลการส่งแจ้งเตือน:", data))
+                    .catch(err => console.error("Error calling Notification API:", err));
+            } else {
+                console.warn("ไม่พบ Token ของแอดมินในระบบ (แอดมินอาจยังไม่ได้ Login)"); //
             }
         })
-        .catch(err => console.error("Error in user send message:", err));
+        .catch(err => {
+            console.error("เกิดข้อผิดพลาดในระบบส่งข้อความ:", err); //
+        });
 }
 
 initializeAuth();
