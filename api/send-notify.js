@@ -58,18 +58,15 @@ module.exports = async (req, res) => {
                 image: imageUrl
             },
             android: {
-                priority: 'high',
+                priority: 'high', // ค่านี้คือระดับความสำคัญของข้อความ (ส่งทันที)
                 notification: {
-                    // สำหรับ Android PWA แนะนำให้ละ icon ไว้เพื่อให้ระบบใช้จาก Manifest 
-                    // หรือใส่เป็น imageUrl ไปเลย
                     image: imageUrl,
                     sound: 'default',
                     clickAction: defaultLink,
                     color: '#f44336',
-                    sound: 'default',
-                    vibrateTimings: ['0s', '0.2s', '0.1s', '0.2s'], // กำหนดจังหวะการสั่น
-                    notificationPriority: 'high',
-                    channelId: 'admin_messages' // ควรตั้งค่า Channel ในแอปด้วย
+                    notificationPriority: 'PRIORITY_MAX',
+                    vibrateTimings: ['0s', '0.2s', '0.1s', '0.2s'],
+                    channelId: 'admin_messages'
                 }
             },
             apns: {
