@@ -1312,29 +1312,35 @@ async function notifyAdmin(adminUid, messageText) {
 // ในไฟล์ user.js
 async function notifyAdmin(messageText) {
     const adminUid = "o139Nm6N3wSW25fCtAzwf2ymfSm2";
-    // เปลี่ยนพาธเป็น admin_metadata
     const adminRef = firebase.database().ref(`admin_metadata/${adminUid}`);
 
-    const snapshot = await adminRef.once('value');
-    if (snapshot.exists()) {
-        const data = snapshot.val();
+    try {
+        const snapshot = await adminRef.once('value');
+        if (snapshot.exists()) {
+            const data = snapshot.val();
 
-        // ถ้า data เป็น Object (มีหลายเครื่อง) ให้เอาเฉพาะค่า Token มาเป็น Array
-        const tokens = typeof data === 'string' ? [data] : Object.values(data);
+            // ดึงเฉพาะค่าที่เป็น String (FCM Token) ออกมาจาก Object
+            const tokens = (typeof data === 'object') ? Object.values(data) : [data];
 
-        tokens.forEach(token => {
-            if (token) {
-                fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        token: token,
-                        title: "มีข้อความใหม่!",
-                        body: messageText
-                    })
-                }).catch(err => console.error("❌ ส่งไม่สำเร็จ:", err));
-            }
-        });
+            console.log(`🔔 ตรวจพบแอดมิน ${tokens.length} เครื่อง กำลังส่งแจ้งเตือน...`);
+
+            tokens.forEach(token => {
+                // ต้องตรวจสอบว่าเป็น Token จริงๆ (ไม่ใช่ Object ย่อย)
+                if (typeof token === 'string' && token.length > 10) {
+                    fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            token: token,
+                            title: "มีข้อความใหม่! 💬",
+                            body: messageText
+                        })
+                    }).catch(err => console.error("❌ ส่งไม่สำเร็จ:", err));
+                }
+            });
+        }
+    } catch (error) {
+        console.error("❌ Error fetching tokens:", error);
     }
 }
 
