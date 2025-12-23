@@ -47,7 +47,7 @@ module.exports = async (req, res) => {
     try {
         const messaging = initFirebase();
         const defaultLink = link || 'https://2bkc-baojai-zone.vercel.app/';
-        const defaultIcon = 'https://2bkc-baojai-zone.vercel.app/adminปก1.png';
+        const defaultIcon = 'https://2bkc-baojai-zone.vercel.app/KCปก1.png';
         const imageUrl = image || defaultIcon;
 
         const message = {
@@ -65,7 +65,11 @@ module.exports = async (req, res) => {
                     image: imageUrl,
                     sound: 'default',
                     clickAction: defaultLink,
-                    color: '#f44336'
+                    color: '#f44336',
+                    sound: 'default',
+                    vibrateTimings: ['0s', '0.2s', '0.1s', '0.2s'], // กำหนดจังหวะการสั่น
+                    notificationPriority: 'high',
+                    channelId: 'admin_messages' // ควรตั้งค่า Channel ในแอปด้วย
                 }
             },
             apns: {
@@ -87,7 +91,7 @@ module.exports = async (req, res) => {
                 notification: {
                     icon: defaultIcon,
                     image: imageUrl,
-                    badge: 'https://2bkc-baojai-zone.vercel.app/badge.png',
+                    badge: 'https://2bkc-baojai-zone.vercel.app/KCปก1.png',
                     requireInteraction: true,
                     tag: recipientUid || 'general_msg' // ใช้ tag เพื่อรวมแจ้งเตือนจากคนเดิมไม่ให้รก
                 },
@@ -127,5 +131,4 @@ module.exports = async (req, res) => {
             code: error.code || 'internal_error'
         });
     }
-
 };
