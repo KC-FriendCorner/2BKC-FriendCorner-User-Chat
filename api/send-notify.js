@@ -47,7 +47,7 @@ module.exports = async (req, res) => {
     try {
         const messaging = initFirebase();
         const defaultLink = link || 'https://2bkc-baojai-zone.vercel.app/';
-        const defaultIcon = 'https://2bkc-baojai-zone.vercel.app/KCปก1.png';
+        const defaultIcon = 'https://2bkc-baojai-zone.vercel.app/adminปก1.png';
         const imageUrl = image || defaultIcon;
 
         const message = {
@@ -127,4 +127,5 @@ module.exports = async (req, res) => {
             code: error.code || 'internal_error'
         });
     }
+
 };
