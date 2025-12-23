@@ -1,11 +1,17 @@
 const admin = require('firebase-admin');
 
 /**
- * Initialize Firebase Admin SDK
+ * Initialize Firebase Admin SDK - Singleton Pattern
  */
 function initFirebase() {
     if (admin.apps.length === 0) {
         const rawKey = process.env.FIREBASE_PRIVATE_KEY || '';
+        const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+
+        if (!rawKey || !clientEmail) {
+            throw new Error("Missing Firebase Configuration Environment Variables");
+        }
+
         const formattedKey = rawKey
             .replace(/\\n/g, '\n')
             .replace(/^['"]|['"]$/g, '')
@@ -14,17 +20,17 @@ function initFirebase() {
         admin.initializeApp({
             credential: admin.credential.cert({
                 projectId: process.env.FIREBASE_PROJECT_ID || "kc-tobe-friendcorner-21655",
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                clientEmail: clientEmail,
                 privateKey: formattedKey,
             }),
         });
-        console.log("✅ Firebase Admin SDK Initialized");
+        console.log("✅ Firebase Admin SDK Initialized Successfully");
     }
     return admin.messaging();
 }
 
 module.exports = async (req, res) => {
-    // CORS Headers
+    // 1. CORS Headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -35,7 +41,7 @@ module.exports = async (req, res) => {
     const { token, title, body, image, recipientUid, link } = req.body;
 
     if (!token || !title || !body) {
-        return res.status(400).json({ error: 'Missing token, title, or body' });
+        return res.status(400).json({ error: 'Missing required fields' });
     }
 
     try {
@@ -46,37 +52,34 @@ module.exports = async (req, res) => {
 
         const message = {
             token: token,
-            // 1. Notification พื้นฐาน (สำหรับ PC/ทั่วไป)
             notification: {
                 title: title,
                 body: body,
                 image: imageUrl
             },
-            // 2. สำหรับ Android
             android: {
                 priority: 'high',
                 notification: {
-                    icon: 'stock_ticker_update', // ต้องตรงกับชื่อไฟล์ในโปรเจกต์ Android (ถ้ามี)
-                    color: '#f44336',
-                    sound: 'default',
+                    // สำหรับ Android PWA แนะนำให้ละ icon ไว้เพื่อให้ระบบใช้จาก Manifest 
+                    // หรือใส่เป็น imageUrl ไปเลย
                     image: imageUrl,
-                    clickAction: defaultLink
+                    sound: 'default',
+                    clickAction: defaultLink,
+                    color: '#f44336'
                 }
             },
-            // 3. สำหรับ iOS (Apple Push Notification service)
             apns: {
                 payload: {
                     aps: {
                         sound: 'default',
                         badge: 1,
-                        'mutable-content': 1 // สำคัญ: เพื่อให้ iOS แสดงรูปภาพได้
+                        'mutable-content': 1
                     }
                 },
                 fcm_options: {
                     image: imageUrl
                 }
             },
-            // 4. สำหรับ Web Push (Safari บน iOS และ Chrome บน Android)
             webpush: {
                 headers: {
                     Urgency: 'high'
@@ -86,7 +89,7 @@ module.exports = async (req, res) => {
                     image: imageUrl,
                     badge: 'https://2bkc-baojai-zone.vercel.app/badge.png',
                     requireInteraction: true,
-                    tag: recipientUid || 'general'
+                    tag: recipientUid || 'general_msg' // ใช้ tag เพื่อรวมแจ้งเตือนจากคนเดิมไม่ให้รก
                 },
                 fcmOptions: {
                     link: defaultLink
@@ -99,22 +102,29 @@ module.exports = async (req, res) => {
         };
 
         const response = await messaging.send(message);
-
-        return res.status(200).json({
-            success: true,
-            messageId: response
-        });
+        return res.status(200).json({ success: true, messageId: response });
 
     } catch (error) {
-        console.error('❌ FCM Error:', error);
-        if (error.code === 'messaging/registration-token-not-registered' ||
-            error.code === 'messaging/invalid-registration-token') {
-            return res.status(410).json({ error: 'Invalid Token', code: error.code });
+        console.error('❌ FCM Error:', error.code, error.message);
+
+        // จัดการ Error เฉพาะทาง
+        const invalidTokens = [
+            'messaging/registration-token-not-registered',
+            'messaging/invalid-registration-token'
+        ];
+
+        if (invalidTokens.includes(error.code)) {
+            return res.status(410).json({
+                success: false,
+                error: 'Token no longer valid',
+                code: error.code
+            });
         }
+
         return res.status(500).json({
             success: false,
             error: error.message,
-            code: error.code
+            code: error.code || 'internal_error'
         });
     }
 };
