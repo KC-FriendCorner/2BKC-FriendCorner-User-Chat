@@ -1317,28 +1317,34 @@ async function notifyAdmin(messageText) {
         const snapshot = await adminRef.once('value');
         if (snapshot.exists()) {
             const data = snapshot.val();
+            // ดึงเฉพาะ Token ที่เป็น String ออกมา
             const tokens = (typeof data === 'object') ? Object.values(data) : [data];
 
-            tokens.forEach(token => {
+            // ใช้ Promise.all เพื่อจัดการการส่งแบบหลายเครื่องพร้อมกัน
+            const sendPromises = tokens.map(token => {
                 if (typeof token === 'string' && token.length > 10) {
-                    fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
+                    return fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             token: token,
                             title: "มีข้อความใหม่! 💬",
                             body: messageText,
-                            // --- แก้ไขรูปภาพตรงนี้ ---
-                            image: "https://2bkc-baojai-zone.vercel.app/adminปก1.png",
-                            // -----------------------
+                            image: "https://2bkc-baojai-zone.vercel.app/adminปก1.png", // รูปแจ้งเตือนใหม่ที่แอดมินจะได้รับ
                             link: "https://2bkc-baojai-zone.vercel.app/admin"
                         })
-                    }).catch(err => console.error("❌ ส่งไม่สำเร็จ:", err));
+                    }).then(res => {
+                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                        return res.json();
+                    });
                 }
             });
+
+            await Promise.all(sendPromises);
+            console.log("✅ ส่งแจ้งเตือนแอดมินทุกเครื่องสำเร็จ");
         }
     } catch (error) {
-        console.error("❌ Error fetching tokens:", error);
+        console.error("❌ Error notifyAdmin:", error);
     }
 }
 
