@@ -59,6 +59,7 @@ module.exports = async (req, res) => {
             },
             android: {
                 priority: 'high', // ค่านี้คือระดับความสำคัญของข้อความ (ส่งทันที)
+                ttl: 3600 * 1000, // 1 ชั่วโมง (ให้ Firebase พยายามส่งซ้ำถ้าเครื่องหลับ)
                 notification: {
                     image: imageUrl,
                     sound: 'default',
@@ -66,7 +67,8 @@ module.exports = async (req, res) => {
                     color: '#f44336',
                     notificationPriority: 'PRIORITY_MAX',
                     vibrateTimings: ['0s', '0.2s', '0.1s', '0.2s'],
-                    channelId: 'admin_messages'
+                    channelId: 'admin_messages',
+                    visibility: 'public' // ช่วยให้โชว์บนหน้า Lock Screen
                 }
             },
             apns: {
@@ -90,7 +92,8 @@ module.exports = async (req, res) => {
                     image: imageUrl,
                     badge: 'https://2bkc-baojai-zone.vercel.app/KCปก1.png',
                     requireInteraction: true,
-                    tag: recipientUid || 'general_msg' // ใช้ tag เพื่อรวมแจ้งเตือนจากคนเดิมไม่ให้รก
+                    tag: recipientUid || 'general_msg', // ใช้ tag เพื่อรวมแจ้งเตือนจากคนเดิมไม่ให้รก
+                    requireInteraction: true // แจ้งเตือนจะไม่หายไปจนกว่าจะกด
                 },
                 fcmOptions: {
                     link: defaultLink
