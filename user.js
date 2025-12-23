@@ -1311,24 +1311,29 @@ async function notifyAdmin(adminUid, messageText) {
 
 // ในไฟล์ user.js
 async function notifyAdmin(messageText) {
-    const adminUid = "o139Nm6N3wSW25fCtAzwf2ymfSm2"; // UID ของแอดมิน
+    const adminUid = "o139Nm6N3wSW25fCtAzwf2ymfSm2";
+    // เปลี่ยนพาธเป็น admin_metadata
     const adminRef = firebase.database().ref(`admin_metadata/${adminUid}`);
 
     const snapshot = await adminRef.once('value');
     if (snapshot.exists()) {
-        const tokens = snapshot.val(); // จะได้ Object ที่รวมทุก Device ID
+        const data = snapshot.val();
 
-        // วนลูปส่งแจ้งเตือนให้ทุก Token ที่เจอ
-        Object.values(tokens).forEach(token => {
-            fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    token: token,
-                    title: "มีข้อความใหม่จากผู้ใช้",
-                    body: messageText
-                })
-            }).catch(err => console.error("Error sending to a device:", err));
+        // ถ้า data เป็น Object (มีหลายเครื่อง) ให้เอาเฉพาะค่า Token มาเป็น Array
+        const tokens = typeof data === 'string' ? [data] : Object.values(data);
+
+        tokens.forEach(token => {
+            if (token) {
+                fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: token,
+                        title: "มีข้อความใหม่!",
+                        body: messageText
+                    })
+                }).catch(err => console.error("❌ ส่งไม่สำเร็จ:", err));
+            }
         });
     }
 }
