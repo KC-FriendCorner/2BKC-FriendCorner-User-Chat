@@ -1082,7 +1082,6 @@ messaging.onMessage((payload) => {
     if (document.hidden && Notification.permission === 'granted') {
         new Notification(title, {
             body: body,
-            icon: '/KCปก1.png'
         });
     } else {
         // ถ้าผู้ใช้กำลังดูหน้าเว็บอยู่ ให้ใช้การแจ้งเตือนแบบ Alert หรือ Toast ในหน้าเว็บแทน
