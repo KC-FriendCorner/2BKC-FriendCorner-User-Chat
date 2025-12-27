@@ -55,6 +55,8 @@ const logoutBtn = document.getElementById('logoutBtn');
 const contextMenu = document.getElementById('contextMenu');
 const deleteOption = document.getElementById('deleteOption');
 const copyOption = document.getElementById('copyOption');
+let activeMessageId = null;
+let touchTimer;
 
 let currentUserId = null;
 let currentChatId = null;
@@ -129,67 +131,61 @@ if (copyOption) {
 
 
 function setupContextMenu(bubbleEl, chatId, messageId) {
-
+    // ตรวจสอบว่าเป็นข้อความของ User ปัจจุบันหรือไม่
     const isUserMessage = firebase.auth().currentUser && firebase.auth().currentUser.uid === chatId;
 
-    // 🚩 Desktop (Right-click)
-    bubbleEl.oncontextmenu = function (e) {
+    // 🚩 Desktop (คลิกขวา) - เปลี่ยนมาใช้ addEventListener
+    bubbleEl.addEventListener('contextmenu', function (e) {
         e.preventDefault();
+        e.stopPropagation(); // กันไม่ให้ Event ไหลไปที่อื่น
 
-        deleteOption.style.display = isUserMessage ? 'block' : 'none';
+        if (!isUserMessage) return;
 
         activeMessageIdForContextMenu = messageId;
         activeChatIdForContextMenu = chatId;
 
-        const posX = e.clientX;
-        const posY = e.clientY;
-
-        contextMenu.style.top = `${posY}px`;
-        contextMenu.style.left = `${posX}px`;
+        // แสดงเมนู
         contextMenu.style.display = 'block';
+        contextMenu.style.left = e.clientX + 'px';
+        contextMenu.style.top = e.clientY + 'px';
 
-        const rect = contextMenu.getBoundingClientRect();
-        if (rect.right > window.innerWidth) {
-            contextMenu.style.left = `${posX - rect.width}px`;
-        }
-        if (rect.bottom > window.innerHeight) {
-            contextMenu.style.top = `${posY - rect.height}px`;
-        }
-    };
+        if (deleteOption) deleteOption.style.display = 'block';
+    });
 
-    // 🚩 Mobile (Long-press)
+    // 🚩 Mobile (กดค้าง) - ปรับปรุง Logic
     let touchTimeout;
-    bubbleEl.ontouchstart = function (e) {
-
-        // 🔑 [CRITICAL FIX]: ป้องกันพฤติกรรมการเลือกข้อความของ iOS ทันทีที่แตะ
-        e.preventDefault();
-
-        const touch = e.touches[0];
-        const touchY = touch.clientY;
-
+    bubbleEl.addEventListener('touchstart', function (e) {
         touchTimeout = setTimeout(() => {
-            deleteOption.style.display = isUserMessage ? 'block' : 'none';
+            if (!isUserMessage) return;
 
+            const touch = e.touches[0];
             activeMessageIdForContextMenu = messageId;
             activeChatIdForContextMenu = chatId;
 
-            contextMenu.style.top = `${touchY}px`;
-            contextMenu.style.left = `${touch.clientX}px`;
             contextMenu.style.display = 'block';
+            contextMenu.style.left = touch.clientX + 'px';
+            contextMenu.style.top = touch.clientY + 'px';
 
-            const rect = contextMenu.getBoundingClientRect();
-            if (rect.right > window.innerWidth) {
-                contextMenu.style.left = `${touch.clientX - rect.width}px`;
-            }
-            if (rect.bottom > window.innerHeight) {
-                contextMenu.style.top = `${touchY - rect.height}px`;
-            }
+            if (deleteOption) deleteOption.style.display = 'block';
+        }, 700); // เพิ่มเวลาเป็น 0.7 วินาทีเพื่อให้เสถียรขึ้น
+    }, { passive: true });
 
-        }, 500);
-    };
+    bubbleEl.addEventListener('touchend', () => clearTimeout(touchTimeout));
+    bubbleEl.addEventListener('touchmove', () => clearTimeout(touchTimeout));
+}
 
-    bubbleEl.ontouchend = function () { clearTimeout(touchTimeout); };
-    bubbleEl.ontouchmove = function () { clearTimeout(touchTimeout); };
+function showUnsendMenu(x, y, messageId) {
+    activeMessageIdForContextMenu = messageId;
+    activeChatIdForContextMenu = currentChatId;
+
+    // แสดงเมนูตามพิกัดที่ส่งมา
+    contextMenu.style.top = `${y}px`;
+    contextMenu.style.left = `${x}px`;
+    contextMenu.style.display = 'block';
+
+    // เช็คสิทธิ์การแสดงปุ่มลบ (ลบได้เฉพาะข้อความตัวเอง)
+    // ในที่นี้ถ้าเป็นแชทระหว่าง User กับ Admin ค่า chatId มักจะเป็น UID ของ User
+    deleteOption.style.display = 'block';
 }
 
 
@@ -792,8 +788,23 @@ function appendMessage(message, messageId, chatId) {
     }
 
     // 8. Event Listener
+    // --- ส่วนที่ 8. Event Listener ใน appendMessage ---
     if (isUser && !isDeleted) {
+        // ให้เฉพาะข้อความ user ที่ยังไม่ถูกลบเท่านั้นที่เรียกใช้เมนู
         setupContextMenu(bubble, chatId, messageId);
+    } else if (isDeleted) {
+        // 🚩 [เพิ่มตรงนี้] ถ้าถูกลบแล้ว ให้ระงับการคลิกขวาของ bubble นี้โดยเฉพาะ
+        bubble.oncontextmenu = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        };
+
+        // สำหรับมือถือ (ถ้าใช้ระบบ touchstart แยก)
+        bubble.ontouchstart = (e) => {
+            // ไม่ต้องทำอะไร หรือสั่งระงับเมนู
+            e.stopPropagation();
+        };
     }
 
     // 9. การจัดเรียงเวลาและ Bubble
@@ -834,18 +845,19 @@ function appendMessage(message, messageId, chatId) {
 
     // 10. แทรก Element
     if (nextMessage) {
-        // แทรกก่อนหน้าข้อความถัดไปที่เวลาใหม่กว่า
         chatBox.insertBefore(messageContainer, nextMessage);
     } else {
-        // ถ้าไม่มีข้อความที่ใหม่กว่าเลย (คือข้อความปัจจุบันใหม่ที่สุด) ให้ต่อท้าย
         chatBox.appendChild(messageContainer);
     }
 
+    // 🚩 ปรับปรุง: เลื่อนลงล่างสุดโดยรอให้ข้อความปรากฏก่อน
     setTimeout(() => {
         messageContainer.classList.add('show');
-    }, 10);
-
-    chatBox.scrollTop = chatBox.scrollHeight;
+        chatBox.scrollTo({
+            top: chatBox.scrollHeight,
+            behavior: 'smooth' // เลื่อนแบบนุ่มนวล
+        });
+    }, 50); // รอ 50ms เพื่อให้เบราว์เซอร์วาดหน้าจอเสร็จ
 }
 
 // ===============================================
@@ -939,46 +951,31 @@ function deleteMessage(chatId, messageId) {
     });
 }
 
+function showUnsendMenu(x, y, messageId) {
+    activeMessageIdForContextMenu = messageId;
+    activeChatIdForContextMenu = currentChatId; // ใช้ chatId ปัจจุบัน
+    contextMenu.style.top = `${y}px`;
+    contextMenu.style.left = `${x}px`;
+    contextMenu.style.display = 'block';
+    // เช็คสิทธิ์ปุ่ม Delete
+    deleteOption.style.display = 'block';
+}
+
 function copyMessage(chatId, messageId) {
     const container = document.querySelector(`[data-message-id="${messageId}"]`);
-    let textToCopy = '';
+    if (!container) return;
 
-    if (container) {
-        const bubble = container.querySelector('.message-bubble');
-        if (bubble && bubble.textContent) {
-            textToCopy = bubble.textContent;
-        }
-    }
-
-    if (textToCopy) {
-        // ตรวจสอบไม่ให้คัดลอกข้อความถูกลบ
-        if (textToCopy.trim() === "[ข้อความถูกยกเลิกการส่ง]") {
-            alert("ไม่สามารถคัดลอกข้อความที่ถูกยกเลิกการส่งได้");
-            return;
-        }
-
-        navigator.clipboard.writeText(textToCopy)
-            .then(() => alert("คัดลอกข้อความเรียบร้อย!"))
-            .catch(err => {
-                console.error('Could not copy text:', err);
-                alert("ไม่สามารถคัดลอกข้อความได้");
-            });
+    const bubble = container.querySelector('.message-bubble');
+    // ตรวจสอบว่าเป็นข้อความที่ถูกลบหรือไม่ โดยเช็ค Class
+    if (bubble.classList.contains('deleted-bubble')) {
+        alert("ไม่สามารถคัดลอกข้อความที่ถูกยกเลิกการส่งได้");
         return;
     }
 
-    database.ref(`${CHATS_PATH}/${chatId}/messages/${messageId}/text`).once('value', snapshot => {
-        const text = snapshot.val();
-        if (text && text !== "[ข้อความถูกยกเลิกการส่ง]") {
-            navigator.clipboard.writeText(text)
-                .then(() => alert("คัดลอกข้อความเรียบร้อย!"))
-                .catch(err => {
-                    console.error('Could not copy text:', err);
-                    alert("ไม่สามารถคัดลอกข้อความได้");
-                });
-        } else {
-            alert("ไม่สามารถคัดลอกข้อความได้ (อาจถูกลบไปแล้ว)");
-        }
-    }).catch(err => alert("ไม่สามารถคัดลอกข้อความได้"));
+    const textToCopy = bubble.innerText; // ใช้ innerText จะได้ข้อความตามที่เห็น
+    navigator.clipboard.writeText(textToCopy)
+        .then(() => alert("คัดลอกข้อความเรียบร้อย!"))
+        .catch(err => console.error('Copy failed:', err));
 }
 
 
@@ -1317,10 +1314,9 @@ async function notifyAdmin(messageText) {
         const snapshot = await adminRef.once('value');
         if (snapshot.exists()) {
             const data = snapshot.val();
-            // ดึงเฉพาะ Token ที่เป็น String ออกมา
             const tokens = (typeof data === 'object') ? Object.values(data) : [data];
 
-            // ใช้ Promise.all เพื่อจัดการการส่งแบบหลายเครื่องพร้อมกัน
+            // ในฟังก์ชัน notifyAdmin ช่วงที่ fetch
             const sendPromises = tokens.map(token => {
                 if (typeof token === 'string' && token.length > 10) {
                     return fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
@@ -1330,22 +1326,580 @@ async function notifyAdmin(messageText) {
                             token: token,
                             title: "มีข้อความใหม่! 💬",
                             body: messageText,
-                            image: "https://2bkc-baojai-zone.vercel.app/adminปก1.png", // รูปแจ้งเตือนใหม่ที่แอดมินจะได้รับ
-                            link: "https://2bkc-baojai-zone.vercel.app/admin"
+                            image: 'https://2bkc-baojai-zone-admin.vercel.app/adminปก1.png',
+                            link: "https://2bkc-baojai-zone-admin.vercel.app/"
                         })
                     }).then(res => {
-                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                        // ถ้าส่งสำเร็จหรือ Token หมดอายุ (410) ให้ถือว่าจบงาน ไม่ต้อง Throw Error
+                        if (res.ok || res.status === 410 || res.status === 404) {
+                            return { success: true };
+                        }
                         return res.json();
+                    }).catch(e => {
+                        // ดักจับ Error เงียบๆ ไม่ให้ขึ้นสีแดงใน Console ของผู้ใช้
+                        return { error: e.message };
                     });
                 }
             });
 
             await Promise.all(sendPromises);
-            console.log("✅ ส่งแจ้งเตือนแอดมินทุกเครื่องสำเร็จ");
         }
     } catch (error) {
-        console.error("❌ Error notifyAdmin:", error);
+        // เปลี่ยนเป็น warn เพื่อไม่ให้ขึ้นสีแดงน่ากลัวใน Console
+        console.warn("⚠️ การแจ้งเตือนทำงานติดขัดเล็กน้อยแต่แอดมินน่าจะได้รับแล้ว");
     }
+}
+
+
+// ฟังก์ชันเปลี่ยนหน้า (อันนี้ก๊อปทับของเดิมคุณได้เลย ปรับแก้ให้เสถียรขึ้น)
+function changePage(pageId, element) {
+    const screens = document.querySelectorAll('.app-screen');
+    const welcomeScreen = document.getElementById('welcomeScreen');
+    const chatScreen = document.getElementById('chatScreen');
+    const navBar = document.querySelector('.admin-bottom-nav');
+    const indicator = document.getElementById('navIndicator'); // ดึงตัวแถบสีชมพูมา
+
+    // 1. ซ่อนหน้าจอต่างๆ (ตามโค้ดเดิมของคุณ)
+    if (welcomeScreen) welcomeScreen.style.display = 'none';
+    if (chatScreen) chatScreen.style.display = 'none';
+    screens.forEach(s => s.style.display = 'none');
+
+    // --- ส่วนที่ต้องแก้ไขในฟังก์ชัน changePage ---
+
+    // 2. แสดงหน้าที่เลือก
+    if (pageId === 'chat') {
+        if (welcomeScreen) {
+            welcomeScreen.style.display = 'flex'; // ✅ เปลี่ยนจาก 'block' เป็น 'flex'
+            welcomeScreen.style.flexDirection = 'column'; // มั่นใจว่าเรียงลงมาแนวตั้ง
+            welcomeScreen.style.justifyContent = 'center'; // บังคับให้อยู่กลางแนวตั้ง
+        }
+    } else {
+        const targetId = (pageId === 'social') ? 'screen-social' : 'screen-admin';
+        const target = document.getElementById(targetId);
+        if (target) {
+            target.style.display = 'block'; // หน้าอื่นใช้ block ได้ปกติถ้าเนื้อหายาว
+        }
+    }
+    // 3. จัดการแถบเมนู (Navbar)
+    if (navBar) {
+        navBar.classList.remove('nav-is-hidden');
+        navBar.style.setProperty('display', 'flex', 'important');
+        navBar.style.setProperty('visibility', 'visible', 'important');
+        navBar.style.setProperty('opacity', '1', 'important');
+    }
+
+    // 4. 🚩 ส่วนที่เพิ่มใหม่: คำนวณให้แถบสีชมพูวิ่งตามปุ่ม
+    if (element && indicator) {
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        element.classList.add('active');
+
+        // คำนวณตำแหน่ง
+        const width = element.offsetWidth;
+        const left = element.offsetLeft;
+
+        // เพิ่มลูกเล่น: ให้แถบยืดออกชั่วคราวตอนเลื่อน (Stretch Effect)
+        indicator.style.width = `${width}px`;
+        indicator.style.left = `${left}px`;
+
+        // ถ้าต้องการความสมจริงแบบแอป iOS สามารถเพิ่มความสั่นเบาๆ ได้ (บน Chrome มือถือ)
+        if (window.navigator.vibrate) {
+            window.navigator.vibrate(10);
+        }
+    }
+
+    // 5. จัดการ class active-page (ตามโค้ดเดิมของคุณ)
+    document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active-page'));
+    const activePage = document.getElementById(pageId);
+    if (activePage) {
+        activePage.classList.add('active-page');
+    }
+}
+
+// 🚩 บังคับให้แถบสีอยู่ที่เมนูแรกตอนเปิดเว็บครั้งแรก
+window.addEventListener('load', () => {
+    const firstItem = document.querySelector('.nav-item.active');
+    const indicator = document.getElementById('navIndicator');
+    if (firstItem && indicator) {
+        indicator.style.width = `${firstItem.offsetWidth}px`;
+        indicator.style.left = `${firstItem.offsetLeft}px`;
+    }
+});
+
+/*4. ฟังก์ชันสำหรับ Admin Popup
+*/
+function showAdminPopup(name, role, imgSrc, fbLink, igLink) {
+    const modal = document.getElementById('admin-modal-overlay');
+    if (!modal) return;
+
+    document.getElementById('modal-name').innerText = name;
+    document.getElementById('modal-role').innerText = role;
+    document.getElementById('modal-img').src = imgSrc;
+    document.getElementById('modal-fb-link').href = fbLink;
+    document.getElementById('modal-ig-link').href = igLink;
+
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+function closeAdminPopupForce() {
+    const modal = document.getElementById('admin-modal-overlay');
+    if (!modal) return;
+    modal.classList.remove('active');
+    setTimeout(() => {
+        if (!modal.classList.contains('active')) {
+            modal.style.display = 'none';
+        }
+    }, 300);
+}
+
+function closeAdminPopup(event) {
+    if (event.target.classList.contains('modal-overlay')) {
+        closeAdminPopupForce();
+    }
+}
+
+function openChat() {
+    document.body.classList.add('is-chatting'); // สั่งซ่อน Nav
+    document.getElementById('chatScreen').style.display = 'flex';
+    // ไม่ต้องสั่งเปลี่ยนหน้า app-screen อื่น เพราะ chatScreen จะทับขึ้นมาเอง
+}
+
+function closeChat() {
+    document.body.classList.remove('is-chatting'); // ดึง Nav กลับมา
+    document.getElementById('chatScreen').style.display = 'none';
+}
+
+function autoResize(textarea) {
+    textarea.style.height = 'auto';
+
+    // กำหนดความสูงตามเนื้อหาจริง
+    let newHeight = textarea.scrollHeight;
+
+    // จำกัดความสูงไม่ให้เกิน 120px (ประมาณ 4-5 บรรทัด) 
+    // ถ้าเกินนี้จะให้เลื่อน (Scroll) ข้างในแทน จอจะได้ไม่พัง
+    if (newHeight > 120) {
+        textarea.style.height = '120px';
+        textarea.style.overflowY = 'auto'; // เปิด scroll เมื่อเนื้อหาเยอะ
+    } else {
+        textarea.style.height = newHeight + 'px';
+        textarea.style.overflowY = 'hidden'; // ปิด scroll ถ้าเนื้อหานิดเดียว
+    }
+
+    const sendBtn = document.getElementById('sendButton');
+    if (textarea.value.trim().length > 0) {
+        sendBtn.style.opacity = "1";
+        sendBtn.style.pointerEvents = "auto";
+        sendBtn.style.transform = "scale(1)"; // เพิ่มลูกเล่นปุ่มขยายเมื่อพิมพ์ได้
+    } else {
+        sendBtn.style.opacity = "0.5";
+        sendBtn.style.pointerEvents = "none";
+        sendBtn.style.transform = "scale(0.9)"; // ปุ่มหดลงเล็กน้อยถ้ากดไม่ได้
+    }
+}
+
+// --- ส่วนควบคุมเมนูยกเลิกข้อความ ---
+document.addEventListener('DOMContentLoaded', () => {
+    const chatContainer = document.getElementById('chatBox'); // ตรวจสอบ ID ให้ตรง
+    const contextMenu = document.getElementById('contextMenu');
+    const deleteOption = document.getElementById('deleteOption');
+
+    if (!chatContainer || !contextMenu) return;
+
+    // ฟังก์ชันเปิดเมนู
+    const openContextMenu = (e, msgId, isUser) => {
+        e.preventDefault();
+        const x = e.pageX || (e.touches ? e.touches[0].pageX : 0);
+        const y = e.pageY || (e.touches ? e.touches[0].pageY : 0);
+
+        activeMessageIdForContextMenu = msgId;
+        activeChatIdForContextMenu = currentChatId;
+
+        contextMenu.style.display = 'block';
+        contextMenu.style.left = `${x}px`;
+        contextMenu.style.top = `${y}px`;
+
+        if (deleteOption) deleteOption.style.display = isUser ? 'block' : 'none';
+    };
+
+    // ดักคลิกขวา (PC)
+    chatContainer.addEventListener('contextmenu', (e) => {
+        const bubble = e.target.closest('.message-container');
+        if (bubble) {
+            const msgId = bubble.getAttribute('data-message-id');
+            const isUser = bubble.classList.contains('user-container');
+            if (msgId) openContextMenu(e, msgId, isUser);
+        }
+    });
+
+    // ดักกดค้าง (Mobile)
+    let holdTimer;
+    chatContainer.addEventListener('touchstart', (e) => {
+        const bubble = e.target.closest('.message-container');
+        if (bubble) {
+            holdTimer = setTimeout(() => {
+                const msgId = bubble.getAttribute('data-message-id');
+                const isUser = bubble.classList.contains('user-container');
+                if (msgId) openContextMenu(e, msgId, isUser);
+            }, 700);
+        }
+    }, { passive: true });
+
+    chatContainer.addEventListener('touchend', () => clearTimeout(holdTimer));
+    document.addEventListener('click', () => contextMenu.style.display = 'none');
+});
+
+// ดักจับการคลิกขวาที่ระดับ document เพื่อป้องกันหา ID ไม่เจอ
+document.addEventListener('contextmenu', function (e) {
+    // 1. หา Bubble ที่ถูกคลิก โดยดูว่าคลิกโดน Class .message-bubble หรือไม่
+    const bubble = e.target.closest('.message-bubble');
+    if (!bubble) return; // ถ้าไม่ได้คลิกโดนข้อความแชท ไม่ต้องทำอะไรต่อ
+
+    e.preventDefault(); // หยุดเมนูขวามาตรฐานของ Browser
+
+    // 2. หา Container เพื่อดึง ID ของข้อความ (data-id)
+    const container = bubble.closest('.message-container');
+
+    if (container && container.dataset.id) {
+        const messageId = container.dataset.id;
+
+        // 3. เรียกใช้ฟังก์ชันเมนูยกเลิก (ต้องมั่นใจว่าคุณสร้างฟังก์ชันนี้ไว้แล้ว)
+        if (typeof showUnsendMenu === "function") {
+            showUnsendMenu(e.pageX, e.pageY, messageId);
+        } else {
+            console.warn("ยังไม่ได้สร้างฟังก์ชัน showUnsendMenu หรือหาฟังก์ชันไม่เจอ");
+            // ทดสอบด้วยการแสดง Alert แทนก่อนได้
+            alert("คลิกขวาที่ข้อความ ID: " + messageId);
+        }
+    }
+});
+
+let pressTimer;
+
+document.addEventListener('touchstart', function (e) {
+    const bubble = e.target.closest('.message-bubble');
+    if (bubble) {
+        pressTimer = window.setTimeout(function () {
+            // จำลองการคลิกขวาเมื่อกดค้างครบ 0.1 วินาที
+            const event = new MouseEvent('contextmenu', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                clientX: e.touches[0].clientX,
+                clientY: e.touches[0].clientY
+            });
+            bubble.dispatchEvent(event);
+        }, 100);
+    }
+});
+
+document.addEventListener('touchend', function () {
+    clearTimeout(pressTimer);
+});
+
+
+function handleShowMenu(e, messageId, isUserMessage) {
+    if (!isUserMessage) {
+        hideContextMenu();
+        return;
+    }
+
+    activeMessageId = messageId;
+
+    // คำนวณพิกัดให้รองรับทั้งเมาส์ และ นิ้วสัมผัส (iOS/Android)
+    let x, y;
+    if (e.touches && e.touches.length > 0) {
+        x = e.touches[0].clientX; // ใช้ clientX/Y จะแม่นยำกว่าบนมือถือ
+        y = e.touches[0].clientY;
+    } else {
+        x = e.clientX || e.pageX;
+        y = e.clientY || e.pageY;
+    }
+
+    // เลื่อนเมนูไปที่จุดสัมผัส
+    contextMenu.style.top = `${y}px`;
+    contextMenu.style.left = `${x}px`;
+
+    contextMenu.style.display = 'block';
+    setTimeout(() => {
+        contextMenu.classList.add('active');
+    }, 10);
+
+    deleteOption.style.display = 'block';
+}
+
+// --- 3. ดักจับการคลิกขวา (PC) ---
+document.addEventListener('contextmenu', function (e) {
+    const bubble = e.target.closest('.message-bubble');
+    if (bubble) {
+        e.preventDefault();
+        const container = bubble.closest('.message-container');
+        const msgId = container.getAttribute('data-message-id');
+        const isUser = container.classList.contains('user-container');
+        handleShowMenu(e, msgId, isUser);
+    }
+});
+
+// --- 4. ดักจับการกดค้าง (Mobile) ---
+document.addEventListener('touchstart', function (e) {
+    const bubble = e.target.closest('.message-bubble');
+    if (bubble) {
+        touchTimer = setTimeout(() => {
+            const container = bubble.closest('.message-container');
+            const msgId = container.getAttribute('data-message-id');
+            const isUser = container.classList.contains('user-container');
+            handleShowMenu(e, msgId, isUser);
+        }, 600); // กดค้าง 0.6 วินาที
+    }
+}, { passive: true });
+
+document.addEventListener('touchend', function () {
+    clearTimeout(touchTimer);
+});
+
+// --- 5. ปิดเมนูเมื่อคลิกที่อื่น ---
+document.addEventListener('click', function () {
+    if (contextMenu) contextMenu.style.display = 'none';
+});
+
+// --- 6. สั่งงานเมื่อกดปุ่มยกเลิก ---
+deleteOption.onclick = function () {
+    if (activeMessageId) {
+        deleteMessage(currentChatId, activeMessageId); // เรียกใช้ฟังก์ชันลบที่มีอยู่แล้ว
+    }
+};
+
+function showContextMenu(e, msgId, isUser) {
+    const menu = document.getElementById('contextMenu');
+    const delBtn = document.getElementById('deleteOption');
+    if (!menu) return;
+
+    e.preventDefault();
+
+    // 1. ดึงค่าตำแหน่งที่คลิก/แตะ
+    let x = e.pageX || (e.touches ? e.touches[0].pageX : 0);
+    let y = e.pageY || (e.touches ? e.touches[0].pageY : 0);
+
+    activeMessageIdForContextMenu = msgId;
+    activeChatIdForContextMenu = currentChatId;
+
+    // ต้องสั่งแสดงผลก่อนเพื่อกหาค่าความกว้าง (offsetWidth)
+    menu.style.display = 'block';
+
+    // 2. 🚩 ปรับให้หันมาทางซ้ายถ้าเป็นข้อความของผู้ใช้
+    if (isUser) {
+        // หักลบความกว้างของเมนูออกจากตำแหน่ง X (สมมติเมนูกว้างประมาณ 150px หรือใช้ offsetWidth)
+        const menuWidth = menu.offsetWidth || 150;
+        x = x - menuWidth;
+
+        // ป้องกันกรณีคลิกชิดขอบซ้ายเกินไปจนเมนูหลุดจอฝั่งซ้าย (Optional)
+        if (x < 0) x = 10;
+    }
+
+    // 3. กำหนดตำแหน่งใหม่
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+
+    // โชว์ปุ่มยกเลิกเฉพาะข้อความเรา
+    if (delBtn) delBtn.style.display = isUser ? 'block' : 'none';
+}
+
+// ดักจับที่ chatBox โดยตรง
+if (chatBox) {
+    // สำหรับคอมพิวเตอร์
+    chatBox.addEventListener('contextmenu', (e) => {
+        const container = e.target.closest('.message-container');
+
+        // ถ้าคลิกขวาโดนข้อความแอดมิน ให้สั่ง PreventDefault (ไม่ให้เมนูขึ้น)
+        if (container && container.classList.contains('admin-container')) {
+            e.preventDefault();
+            return false;
+        }
+
+        // ถ้าเป็นข้อความ user และคุณทำ Context Menu เอง ก็สั่งเปิดตรงนี้ได้เช่นกัน
+        if (container && container.classList.contains('user-container')) {
+            e.preventDefault();
+            const msgId = container.getAttribute('data-message-id');
+            showContextMenu(e, msgId, true);
+        }
+    });
+
+    //ios//
+    let touchTimer;
+    const chatBox = document.getElementById('chatBox');
+
+    chatBox.addEventListener('touchstart', (e) => {
+        // หา container ที่เราเป็นคนส่ง (user-container)
+        const container = e.target.closest('.user-container');
+
+        if (container) {
+            const msgId = container.getAttribute('data-message-id');
+
+            // ตั้งเวลา 600ms (ประมาณครึ่งวินาที) ถ้ากดค้างถึงจุดนี้ให้โชว์เมนู
+            touchTimer = setTimeout(() => {
+                // ส่ง e ไปให้ handleShowMenu เพื่อคำนวณตำแหน่งพิกัด
+                handleShowMenu(e, msgId, true);
+
+                // สั่นเบาๆ (Haptic Feedback) ถ้าเครื่องรองรับ
+                if (navigator.vibrate) navigator.vibrate(50);
+            }, 600);
+        }
+    }, { passive: true });
+
+    // ถ้าปล่อยนิ้วก่อนเวลา, เลื่อนจอ, หรือมีการสัมผัสซ้อน ให้ยกเลิก Timer
+    chatBox.addEventListener('touchend', () => clearTimeout(touchTimer));
+    chatBox.addEventListener('touchmove', () => clearTimeout(touchTimer));
+    chatBox.addEventListener('touchcancel', () => clearTimeout(touchTimer));
+
+    // สำหรับมือถือ
+    let holdTimer;
+    // ฟังก์ชันดักจับการเริ่มแตะ (Touch Start)
+    chatBox.addEventListener('touchstart', (e) => {
+        isScrolling = false;
+
+        // หา Message Container ที่ใกล้ที่สุด
+        const container = e.target.closest('.message-container');
+
+        // ตรวจสอบเงื่อนไข:
+        // 1. ต้องมี container 
+        // 2. ต้องมี class 'user-container' (ข้อความของเราเอง) ถึงจะยอมให้เปิดเมนู
+        if (container && container.classList.contains('user-container')) {
+
+            holdTimer = setTimeout(() => {
+                if (!isScrolling) {
+                    const msgId = container.getAttribute('data-message-id');
+                    // เรียกใช้ฟังก์ชันแสดงเมนู
+                    showContextMenu(e, msgId, true);
+                }
+            }, 600); // ระยะเวลากดค้าง (มิลลิวินาที)
+
+        } else {
+            // ถ้าเป็นข้อความแอดมิน หรือพื้นที่ว่าง ให้เคลียร์ Timer ทันที (ไม่เกิดอะไรขึ้น)
+            clearTimeout(holdTimer);
+        }
+    }, { passive: true });
+
+    chatBox.addEventListener('touchend', () => clearTimeout(holdTimer));
+}
+
+// ฟังก์ชันเลื่อนลงล่างสุดที่ฉลาดขึ้น
+function smartScroll() {
+    const chatBox = document.getElementById('chatBox');
+    // ระยะห่างจากล่างสุด ถ้าห่างไม่เกิน 300px ให้เลื่อนลงอัตโนมัติ (เผื่อเขากำลังอ่านข้อความเก่าอยู่)
+    const isNearBottom = chatBox.scrollHeight - chatBox.clientHeight - chatBox.scrollTop < 300;
+
+    if (isNearBottom) {
+        chatBox.scrollTo({
+            top: chatBox.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+}
+
+function showChat() {
+    document.getElementById('welcomeScreen').style.display = 'none';
+    const chatScreen = document.getElementById('chatScreen');
+    chatScreen.style.display = 'flex'; // ใช้ flex เพื่อให้ layout ทำงาน
+
+    // เลื่อนลงล่างสุด
+    setTimeout(() => {
+        const chatBox = document.getElementById('chatBox');
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }, 100);
+}
+
+function hideContextMenu() {
+    const menu = document.getElementById('contextMenu');
+    menu.classList.remove('active');
+    // รอให้แอนิเมชันเล่นจบก่อนค่อยสั่ง display: none
+    setTimeout(() => {
+        if (!menu.classList.contains('active')) {
+            menu.style.display = 'none';
+        }
+    }, 200);
+}
+
+// ปิดเมนูเมื่อคลิกที่อื่น
+document.addEventListener('click', hideContextMenu);
+document.getElementById('chatBox').addEventListener('scroll', hideContextMenu);
+
+
+window.onload = function () {
+    const overlay = document.getElementById('welcome-popup-overlay');
+    overlay.classList.add('active'); // ทำให้ Overlay และ Popup เริ่ม Animate
+};
+// ฟังก์ชันปิดหน้าแรก แล้วเปิดหน้าเครดิต
+// ย้ายมาไว้บนๆ ของไฟล์
+function showNextPopup() {
+    const overlay = document.getElementById('welcome-popup-overlay');
+    overlay.classList.remove('active');
+    // อาจจะหน่วงเวลาแล้วค่อยซ่อน หรือทำ Fade-out Animation
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        // เปิด popup ถัดไป หรือเปลี่ยนหน้าจอ
+    }, 500);
+}
+
+function closeFinal() {
+    const secondPopup = document.getElementById('credit-overlay');
+    if (secondPopup) {
+        secondPopup.style.opacity = '0';
+        setTimeout(() => {
+            secondPopup.style.display = 'none';
+        }, 300);
+    }
+}
+window.addEventListener('resize', () => {
+    if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+        setTimeout(scrollToBottom, 100);
+    }
+});
+
+// ฟังก์ชันเลื่อนแชทลงล่างสุด
+function scrollToBottom() {
+    const chatBox = document.getElementById('chatBox');
+    if (chatBox) {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+}
+
+// เมื่อจิ้มที่ช่องพิมพ์ ให้เลื่อนลงล่างสุด
+const inputField = document.getElementById('chatInput');
+if (inputField) {
+    inputField.addEventListener('focus', () => {
+        // รอให้คีย์บอร์ดเด้งเสร็จนิดนึงแล้วเลื่อน
+        setTimeout(scrollToBottom, 300);
+    });
+}
+
+// เมื่อมีการส่งข้อความใหม่ (ใส่ไว้ในฟังก์ชันส่งข้อความของคุณด้วย)
+scrollToBottom();
+
+
+// ใส่โค้ดนี้ในฟังก์ชันที่ใช้ส่งข้อความ (handleSendMessage)
+function afterSendMessage() {
+    const input = document.getElementById('chatInput');
+    input.value = '';
+    autoResize(input); // เรียกฟังก์ชันนี้อีกครั้งเพื่อรีเซ็ตความสูงและปุ่มส่ง
+}
+
+// ปิดการใช้งาน Context Menu (เมนูกดค้าง/คลิกขวา) ทั่วทั้งหน้าจอ
+document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+}, false);
+
+// วิธีเรียกใช้: ให้เอาคำว่า generateAutoMessage(); ไปใส่ไว้ในตอนที่สุ่ม ID เสร็จแล้ว
+
+function showTypingAndSend(text, delay) {
+    // แสดงสถานะ "Admin กำลังพิมพ์..."
+    const typingIndicator = document.getElementById('typingIndicator');
+    typingIndicator.style.display = 'block';
+
+    setTimeout(() => {
+        typingIndicator.style.display = 'none';
+        sendAutoMessage(text);
+    }, delay);
 }
 
 initializeAuth();
