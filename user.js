@@ -1326,6 +1326,7 @@ async function notifyAdmin(messageText) {
                             token: token,
                             title: "มีข้อความใหม่! 💬",
                             body: messageText,
+                            icon: 'https://2bkc-baojai-zone-admin.vercel.app/adminปก1.png', // รูปเล็ก
                             image: 'https://2bkc-baojai-zone-admin.vercel.app/adminปก1.png',
                             link: "https://2bkc-baojai-zone-admin.vercel.app/"
                         })
@@ -1901,5 +1902,20 @@ function showTypingAndSend(text, delay) {
         sendAutoMessage(text);
     }, delay);
 }
+
+// บังคับให้หน้าแรกทำงานและแถบสีชมพูปรากฏทันทีเมื่อโหลดหน้าเว็บ
+window.addEventListener('load', () => {
+    // 1. ค้นหาปุ่ม Baojai Chat (nav-item ตัวแรก)
+    const firstTab = document.querySelector('.nav-item');
+
+    // 2. ตรวจสอบว่ามีปุ่มและฟังก์ชัน changePage หรือไม่
+    if (firstTab && typeof changePage === 'function') {
+        console.log("กำลังเปิดหน้าแชทและแสดงแถบสีชมพู...");
+
+        // 3. เรียกใช้ changePage โดยส่ง 'chat' และตัวแปร element (firstTab) เข้าไป
+        // เพื่อให้ indicator คำนวณ offsetWidth และ offsetLeft ได้ถูกต้อง
+        changePage('chat', firstTab);
+    }
+});
 
 initializeAuth();
