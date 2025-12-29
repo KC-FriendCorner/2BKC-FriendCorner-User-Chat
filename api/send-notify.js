@@ -63,7 +63,7 @@ module.exports = async (req, res) => {
                     icon: 'https://2bkc-baojai-zone.vercel.app/KCปก1.png',
                     sound: 'default',
                     clickAction: defaultLink,
-                    color: '#f44336',
+                    color: '#E91E63',
                     notificationPriority: 'PRIORITY_MAX',
                     vibrateTimings: ['0s', '0.2s', '0.1s', '0.2s'],
                     channelId: 'admin_messages',
