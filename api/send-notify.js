@@ -1,8 +1,5 @@
 const admin = require('firebase-admin');
 
-/**
- * Initialize Firebase Admin SDK - Singleton Pattern
- */
 function initFirebase() {
     if (admin.apps.length === 0) {
         const rawKey = process.env.FIREBASE_PRIVATE_KEY || '';
@@ -30,7 +27,6 @@ function initFirebase() {
 }
 
 module.exports = async (req, res) => {
-    // 1. CORS Headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -38,7 +34,7 @@ module.exports = async (req, res) => {
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
-    const { token, title, body, image, recipientUid, link } = req.body;
+    const { token, title, body, recipientUid, link } = req.body;
 
     if (!token || !title || !body) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -47,27 +43,29 @@ module.exports = async (req, res) => {
     try {
         const messaging = initFirebase();
         const defaultLink = link || 'https://2bkc-baojai-zone.vercel.app/';
-        const defaultIcon = 'https://2bkc-baojai-zone.vercel.app/KCปก1.png';
-        const imageUrl = image || defaultIcon;
+        // ✅ ใช้ KCปก1.png เป็นหลัก
+        const defaultIcon = 'https://2bkc-baojai-zone.vercel.app/KCปก1.png'; 
 
         const message = {
             token: token,
             notification: {
                 title: title,
                 body: body,
+                // 🚩 ลบรูปใหญ่ออกเรียบร้อย
             },
             android: {
-                priority: 'high', // ค่านี้คือระดับความสำคัญของข้อความ (ส่งทันที)
-                ttl: 3600 * 1000, // 1 ชั่วโมง (ให้ Firebase พยายามส่งซ้ำถ้าเครื่องหลับ)
+                priority: 'high',
+                ttl: 3600 * 1000,
                 notification: {
-                    icon: 'https://2bkc-baojai-zone.vercel.app/KCปก1.png',
+                    icon: defaultIcon,
                     sound: 'default',
                     clickAction: defaultLink,
-                    color: '#E91E63',
+                    // ✅ สีชมพู Baojai
+                    color: '#E91E63', 
                     notificationPriority: 'PRIORITY_MAX',
                     vibrateTimings: ['0s', '0.2s', '0.1s', '0.2s'],
-                    channelId: 'admin_messages',
-                    visibility: 'public' // ช่วยให้โชว์บนหน้า Lock Screen
+                    channelId: 'user_messages',
+                    visibility: 'public'
                 }
             },
             apns: {
@@ -77,20 +75,16 @@ module.exports = async (req, res) => {
                         badge: 1,
                         'mutable-content': 1
                     }
-                },
-                fcm_options: {
                 }
             },
             webpush: {
-                headers: {
-                    Urgency: 'high'
-                },
+                headers: { Urgency: 'high' },
                 notification: {
                     icon: defaultIcon,
-                    badge: 'https://2bkc-baojai-zone.vercel.app/KCปก.png',
+                    // ✅ แก้ชื่อไฟล์ให้ตรง (KCปก1.png)
+                    badge: 'https://2bkc-baojai-zone.vercel.app/badge.png', 
                     requireInteraction: true,
-                    tag: recipientUid || 'general_msg', // ใช้ tag เพื่อรวมแจ้งเตือนจากคนเดิมไม่ให้รก
-                    requireInteraction: true // แจ้งเตือนจะไม่หายไปจนกว่าจะกด
+                    tag: recipientUid || 'user_msg',
                 },
                 fcmOptions: {
                     link: defaultLink
@@ -107,26 +101,10 @@ module.exports = async (req, res) => {
 
     } catch (error) {
         console.error('❌ FCM Error:', error.code, error.message);
-
-        // จัดการ Error เฉพาะทาง
-        const invalidTokens = [
-            'messaging/registration-token-not-registered',
-            'messaging/invalid-registration-token'
-        ];
-
+        const invalidTokens = ['messaging/registration-token-not-registered', 'messaging/invalid-registration-token'];
         if (invalidTokens.includes(error.code)) {
-            return res.status(410).json({
-                success: false,
-                error: 'Token no longer valid',
-                code: error.code
-            });
+            return res.status(410).json({ success: false, error: 'Token no longer valid', code: error.code });
         }
-
-        return res.status(500).json({
-            success: false,
-            error: error.message,
-            code: error.code || 'internal_error'
-        });
+        return res.status(500).json({ success: false, error: error.message, code: error.code || 'internal_error' });
     }
-
 };
