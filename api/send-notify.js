@@ -47,7 +47,7 @@ module.exports = async (req, res) => {
     try {
         const messaging = initFirebase();
         const defaultLink = link || 'https://2bkc-baojai-zone.vercel.app/';
-        const defaultIcon = 'https://2bkc-baojai-zone.vercel.app/adminปก1.png';
+        const defaultIcon = 'https://2bkc-baojai-zone.vercel.app/KCปก1.png';
         const imageUrl = image || defaultIcon;
 
         const message = {
@@ -60,7 +60,7 @@ module.exports = async (req, res) => {
                 priority: 'high', // ค่านี้คือระดับความสำคัญของข้อความ (ส่งทันที)
                 ttl: 3600 * 1000, // 1 ชั่วโมง (ให้ Firebase พยายามส่งซ้ำถ้าเครื่องหลับ)
                 notification: {
-                    icon: 'https://2bkc-baojai-zone.vercel.app/adminปก1.png',
+                    icon: 'https://2bkc-baojai-zone.vercel.app/KCปก1.png',
                     sound: 'default',
                     clickAction: defaultLink,
                     color: '#f44336',
@@ -87,7 +87,7 @@ module.exports = async (req, res) => {
                 },
                 notification: {
                     icon: defaultIcon,
-                    badge: 'https://2bkc-baojai-zone-admin.vercel.app/adminbadge.png',
+                    badge: 'https://2bkc-baojai-zone.vercel.app/badge.png',
                     requireInteraction: true,
                     tag: recipientUid || 'general_msg', // ใช้ tag เพื่อรวมแจ้งเตือนจากคนเดิมไม่ให้รก
                     requireInteraction: true // แจ้งเตือนจะไม่หายไปจนกว่าจะกด
