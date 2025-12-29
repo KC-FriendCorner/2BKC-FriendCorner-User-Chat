@@ -63,7 +63,7 @@ module.exports = async (req, res) => {
                     icon: 'https://2bkc-baojai-zone.vercel.app/KCปก1.png',
                     sound: 'default',
                     clickAction: defaultLink,
-                    color: '#f44336',
+                    color: '#E91E63',
                     notificationPriority: 'PRIORITY_MAX',
                     vibrateTimings: ['0s', '0.2s', '0.1s', '0.2s'],
                     channelId: 'admin_messages',
@@ -87,7 +87,7 @@ module.exports = async (req, res) => {
                 },
                 notification: {
                     icon: defaultIcon,
-                    badge: 'https://2bkc-baojai-zone.vercel.app/badge.png',
+                    badge: 'https://2bkc-baojai-zone.vercel.app/KCปก.png',
                     requireInteraction: true,
                     tag: recipientUid || 'general_msg', // ใช้ tag เพื่อรวมแจ้งเตือนจากคนเดิมไม่ให้รก
                     requireInteraction: true // แจ้งเตือนจะไม่หายไปจนกว่าจะกด
