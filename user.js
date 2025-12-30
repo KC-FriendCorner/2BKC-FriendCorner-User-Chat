@@ -1389,25 +1389,26 @@ function changePage(pageId, element) {
         navBar.style.setProperty('opacity', '1', 'important');
     }
 
-    // 4. 🚩 ส่วนที่เพิ่มใหม่: คำนวณให้แถบสีชมพูวิ่งตามปุ่ม
+    // 4. ส่วนที่ปรับปรุงใหม่: เพิ่ม Stretch Effect (หยดน้ำยืด)
     if (element && indicator) {
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-        });
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
         element.classList.add('active');
 
-        // คำนวณตำแหน่ง
         const width = element.offsetWidth;
         const left = element.offsetLeft;
 
-        // เพิ่มลูกเล่น: ให้แถบยืดออกชั่วคราวตอนเลื่อน (Stretch Effect)
-        indicator.style.width = `${width}px`;
+        // --- ลูกเล่นยืดตัว ---
+        // ทำให้หยดน้ำกว้างขึ้นชั่วคราวขณะสไลด์
+        indicator.style.transform = `translateY(-50%) scaleX(1.1)`;
         indicator.style.left = `${left}px`;
+        indicator.style.width = `${width}px`;
 
-        // ถ้าต้องการความสมจริงแบบแอป iOS สามารถเพิ่มความสั่นเบาๆ ได้ (บน Chrome มือถือ)
-        if (window.navigator.vibrate) {
-            window.navigator.vibrate(10);
-        }
+        // คืนค่าขนาดปกติหลังจากสไลด์เสร็จ (ประมาณ 300ms)
+        setTimeout(() => {
+            indicator.style.transform = `translateY(-50%) scaleX(1)`;
+        }, 300);
+
+        if (window.navigator.vibrate) window.navigator.vibrate(10);
     }
 
     // 5. จัดการ class active-page (ตามโค้ดเดิมของคุณ)
@@ -1418,15 +1419,35 @@ function changePage(pageId, element) {
     }
 }
 
-// 🚩 บังคับให้แถบสีอยู่ที่เมนูแรกตอนเปิดเว็บครั้งแรก
-window.addEventListener('load', () => {
-    const firstItem = document.querySelector('.nav-item.active');
+function initIndicator() {
     const indicator = document.getElementById('navIndicator');
-    if (firstItem && indicator) {
-        indicator.style.width = `${firstItem.offsetWidth}px`;
-        indicator.style.left = `${firstItem.offsetLeft}px`;
+    const activeItem = document.querySelector('.nav-item.active');
+
+    if (activeItem && indicator) {
+        // สร้างฟังก์ชันคำนวณที่ทำงานซ้ำได้
+        const setPos = () => {
+            const width = activeItem.offsetWidth;
+            const left = activeItem.offsetLeft;
+
+            if (width > 0) {
+                indicator.style.width = `${width}px`;
+                indicator.style.left = `${left}px`;
+                indicator.style.opacity = "1";
+            } else {
+                // ถ้ายังคำนวณไม่ได้ (ค่าเป็น 0) ให้รอ 50ms แล้วลองใหม่
+                setTimeout(setPos, 50);
+            }
+        };
+
+        setPos(); // รันครั้งแรก
     }
-});
+}
+
+// 🚩 หัวใจหลักคือตรงนี้: รัน 2 จังหวะเพื่อความชัวร์
+document.addEventListener('DOMContentLoaded', initIndicator);
+window.addEventListener('load', initIndicator);
+// เผื่อมือถือโหลดช้ามาก ให้เช็คอีกทีที่ 1 วินาที
+setTimeout(initIndicator, 1000);
 
 /*4. ฟังก์ชันสำหรับ Admin Popup
 */
@@ -1651,7 +1672,7 @@ document.addEventListener('touchstart', function (e) {
             const msgId = container.getAttribute('data-message-id');
             const isUser = container.classList.contains('user-container');
             handleShowMenu(e, msgId, isUser);
-        }, 600); // กดค้าง 0.6 วินาที
+        }, 300); // กดค้าง 0.6 วินาที
     }
 }, { passive: true });
 
@@ -1917,5 +1938,134 @@ window.addEventListener('load', () => {
         changePage('chat', firstTab);
     }
 });
+
+// ตอนสั่งเปิดเมนู
+contextMenu.style.display = 'block';
+setTimeout(() => {
+    contextMenu.classList.add('active');
+}, 10);
+
+
+function onContextMenu(e) {
+    e.preventDefault();
+    const menu = document.getElementById('contextMenu');
+
+    // 1. ย้ายตำแหน่งไปที่เมาส์
+    menu.style.left = e.clientX + 'px';
+    menu.style.top = e.clientY + 'px';
+
+    // 2. เปิด display ก่อนเพื่อให้มองเห็นโครงสร้าง
+    menu.style.display = 'block';
+
+    // 3. ใช้ setTimeout นิดเดียว (10ms) เพื่อให้ browser รับรู้การเปลี่ยนแปลงก่อนรัน animation
+    setTimeout(() => {
+        menu.classList.add('active');
+    }, 10);
+}
+
+// ฟังก์ชันปิดเมนู (ก๊อปไปวางแทนของเดิม)
+function hideMenu() {
+    const menu = document.getElementById('contextMenu');
+    menu.classList.remove('active');
+
+    // รอให้ Animation (0.15s) จบก่อนค่อยเอาออกจากหน้าจอจริงๆ
+    setTimeout(() => {
+        if (!menu.classList.contains('active')) {
+            menu.style.display = 'none';
+        }
+    }, 150);
+}
+
+// ปิดเมนูเมื่อคลิกที่อื่น
+document.addEventListener('click', hideMenu);
+
+function forceShowIndicator() {
+    const indicator = document.getElementById('navIndicator');
+    const activeItem = document.querySelector('.nav-item.active');
+
+    if (activeItem && indicator) {
+        // ใช้ requestAnimationFrame เพื่อรอให้ Browser วาดหน้าจอเสร็จ 1 เฟรม
+        requestAnimationFrame(() => {
+            const width = activeItem.offsetWidth;
+            const left = activeItem.offsetLeft;
+
+            if (width > 0) {
+                indicator.style.width = `${width}px`;
+                indicator.style.left = `${left}px`;
+                indicator.style.opacity = "1"; // ค่อยๆ โชว์หยดน้ำออกมา
+            } else {
+                // ถ้าขนาดยังไม่มา ให้ลองใหม่ในเฟรมถัดไป
+                forceShowIndicator();
+            }
+        });
+    }
+}
+
+// เรียกทำงานทันที
+forceShowIndicator();
+
+// กันพลาด: เรียกซ้ำเมื่อโหลดเสร็จสมบูรณ์ทุกอย่าง
+window.addEventListener('load', forceShowIndicator);
+
+function wakeUpIndicator() {
+    const indicator = document.getElementById('navIndicator');
+    const activeItem = document.querySelector('.nav-item.active');
+
+    if (activeItem && indicator) {
+        // ใช้ฟังก์ชันที่วนเช็คค่าเรื่อยๆ จนกว่า width จะมากกว่า 0
+        const checkFrame = () => {
+            const w = activeItem.offsetWidth;
+            const l = activeItem.offsetLeft;
+
+            if (w > 0) {
+                indicator.style.width = w + 'px';
+                indicator.style.left = l + 'px';
+                // บังคับให้แสดงผล
+                indicator.style.display = 'block';
+                indicator.style.opacity = '1';
+            } else {
+                // ถ้ายังไม่วาดหน้าจอ ให้รอเฟรมถัดไปแล้วเช็คใหม่
+                requestAnimationFrame(checkFrame);
+            }
+        };
+        checkFrame();
+    }
+}
+
+// 🚩 เรียกใช้ทันทีหลังนิยามฟังก์ชัน
+wakeUpIndicator();
+
+// 🚩 เรียกซ้ำเมื่อโหลดทุกอย่าง (รูป/ฟอนต์) เสร็จสิ้น
+window.addEventListener('load', wakeUpIndicator);
+// 🚩 เรียกซ้ำเมื่อมีการปรับขนาดจอ
+window.addEventListener('resize', wakeUpIndicator);
+
+function alignIndicator() {
+    const indicator = document.getElementById('navIndicator');
+    const activeItem = document.querySelector('.nav-item.active');
+
+    if (activeItem && indicator) {
+        // ดึงค่าตำแหน่งจริง ณ วินาทีนั้น
+        const rect = activeItem.getBoundingClientRect();
+        const parentRect = activeItem.parentElement.getBoundingClientRect();
+
+        // คำนวณตำแหน่งที่ถูกต้องเทียบกับตัวแม่
+        const left = activeItem.offsetLeft;
+        const width = activeItem.offsetWidth;
+
+        if (width > 0) {
+            indicator.style.width = `${width}px`;
+            indicator.style.left = `${left}px`;
+        } else {
+            // ถ้ายังเป็น 0 ให้รอ 100ms แล้วเรียกตัวเองใหม่ (Loop จนกว่าจะขึ้น)
+            setTimeout(alignIndicator, 100);
+        }
+    }
+}
+
+// เรียกใช้งาน 3 จังหวะเพื่อความชัวร์
+document.addEventListener('DOMContentLoaded', alignIndicator);
+window.addEventListener('load', alignIndicator);
+setTimeout(alignIndicator, 500); // จังหวะสุดท้าย เผื่อเครื่องอืด
 
 initializeAuth();

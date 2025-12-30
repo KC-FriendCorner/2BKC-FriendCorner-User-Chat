@@ -67,14 +67,16 @@
 
                     <div id="mainActions" style="display:none;">
 
-                        <button id="startChat" class="primary-button">
-                            <i class="fas fa-comment-dots"></i>
-                            กดเพื่อสนทนา
+                        <button id="startChat" class="primary-button"
+                            onclick="handleChatView(true)">
+                            <i class="fas fa-comment-dots"></i> กดเพื่อสนทนา
                         </button>
-
                         <button id="logoutBtn" class="secondary-button"
                             onclick="userLogout()">
                             <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                        </button>
+                        <button id="homeButton" onclick="handleChatView(false)">
+                            <i class="fas fa-home"></i> หน้าแรก
                         </button>
                     </div>
 
@@ -122,64 +124,277 @@
                     </div>
                 </div>
 
-                <div class="input-area">
-                    <textarea id="chatInput"
-                        placeholder="พิมพ์ข้อความ..."></textarea>
-                    <button id="sendButton" class="primary-button">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
+                <div class="input-container-modern">
+
+                    <div class="input-wrapper">
+
+                        <textarea id="chatInput"
+                            placeholder="พิมพ์ข้อความ..."
+                            rows="1"
+                            oninput="autoResize(this)"></textarea>
+
+                        <button id="sendButton" class="send-btn-modern">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
                 </div>
 
             </div>
 
         </div>
 
-        <div id="contextMenu">
+        <div id="contextMenu"
+            style="display:none; position:fixed; z-index:999999; pointer-events:none;">
             <div id="deleteOption"
-                class="context-menu-option">ยกเลิกการส่ง</div>
+                style="display: inline-flex; align-items: center; padding: 10px 20px; 
+                cursor: pointer; color: white; background: #ff3b30; 
+                border-radius: 50px; font-weight: 600; font-size: 14px; 
+                box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4); 
+                pointer-events: auto; white-space: nowrap; 
+                border: 2px solid white; font-family: 'Sarabun', sans-serif;">
+                <i class="fas fa-trash-alt" style="margin-right: 8px;"></i>
+                ยกเลิกการส่ง
+            </div>
         </div>
 
         <audio id="notifySound" src="notify.mp3" preload="auto"></audio>
 
-        <div id="popup-overlay" class="overlay">
+        <div id="welcome-popup-overlay" class="overlay active">
             <div class="popup-content">
-                <h2>2BKC Baojai Zone</h2>
-                <p>สำหรับผู้ที่ต้องการคำปรึกษา ไม่ว่าจะเป็นปัญหาเล็กหรือใหญ่
-                    ก็สามารถเข้ามาคุยกับเราแบบไม่ระบุตัวตน
-                    เพื่อความสบายใจของทุกคนได้นะคับ</p>
-                <br>
-                <p>❗แชทนี้จะทำการตอบกลับโดยแอดมิน ขออภัยหากเกิดความล่าช้า❗</p>
+                <h2 class="popup-title">2BKC Baojai Zone</h2>
 
-                <div class="sticky-social-bar">
-                    <a href="https://www.facebook.com/FriendCornerSadaoKhanchai"
-                        target="_blank"
-                        class="sticky-btn fb">
-                        <i class="fab fa-facebook-f"></i> <span>Facebook</span>
-                    </a>
-                    <a
-                        href="https://www.instagram.com/2bkc.friendcorner/?fbclid=IwY2xjawOza5xicmlkETFMbE0wNjlBc3EwQ21RMlBuc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHoKb0_oerObMBTGA92HLrO5TcTW74XTn_u_txKjpMW8tRLxNOffk8YA8Cjbe&brid=YSVWl-Fyz12XEFtSMfLo-w#"
-                        target="_blank"
-                        class="sticky-btn ig">
-                        <i class="fab fa-instagram"></i> <span>Instagram</span>
-                    </a>
+                <div class="popup-description">
+                    <p>สำหรับผู้ที่ต้องการคำปรึกษา ไม่ว่าจะเป็นปัญหาเล็กหรือใหญ่
+                        ก็สามารถเข้ามาคุยกับเราแบบไม่ระบุตัวตน
+                        เพื่อความสบายใจของทุกคนได้นะคับ</p>
                 </div>
 
-                <button id="close-popup"
-                    onclick="document.getElementById('popup-overlay').style.display='none'">เข้าสู่เว็บไซต์</button>
+                <div class="popup-warning">
+                    <p>❗แชทนี้จะทำการตอบกลับโดยแอดมิน
+                        ขออภัยหากเกิดความล่าช้า❗</p>
+                </div>
+
+                <div class="popup-credit">
+                    <p class="club-name">ออกแบบและพัฒนาโดย</p>
+                    <h3 class="club-name">คณะกรรมการดำเนินงานชมรม TO BE
+                        NUMBER ONE</h3>
+                    <p class="club-name">โรงเรียนสะเดา
+                        "ขรรค์ชัยกัมพลานนท์อนุสรณ์"</p>
+                </div>
+
+                <button id="close-popup" class="action-button"
+                    onclick="showNextPopup()">เข้าสู่เว็บไซต์</button>
             </div>
         </div>
 
-        <script
-            src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-        <script
-            src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-        <script
-            src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-        <script
-            src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+        <div id="screen-chat" class="app-screen">
+        </div>
 
-        <script src="user.js"></script>
+        <div id="screen-social" class="app-screen">
+            <div class="contact-header-area">
+                <h2 class="contact-main-title">Social Media</h2>
+                <p
+                    class="contact-sub-title">สามารถติดตามข่าวสารเพิ่มเติมได้ที่ช่องทางด้านล่างนี้
+                </div>
 
-    </body>
+                <div class="contact-container">
+                    <div class="contact-category-card">
+                        <div class="category-header fb-bg">
+                            <i class="fab fa-facebook"></i>
+                            <span>Facebook</span>
+                        </div>
+                        <div class="category-body">
+                            <a
+                                href="https://www.facebook.com/search/top/?q=to%20be%20number%20one%20sadao%20khanchai"
+                                target="_blank" class="contact-link-btn">
+                                <div class="btn-info">
+                                    <strong>TO BE NUMBER ONE SADAO
+                                        KHANCHAI</strong>
+                                    <span>Sadao Khanchai Kamphalanon Anusorn
+                                        School
+                                    </div>
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                                <a
+                                    href="https://www.facebook.com/FriendCornerSadaoKhanchai"
+                                    target="_blank" class="contact-link-btn">
+                                    <div class="btn-info">
+                                        <strong>ศูนย์เพื่อนใจโรงเรียนสะเดา"ขรรค์ชัยกัมพลานนท์อนุสรณ์"</strong>
+                                        <span>Sadao Khanchai Kamphalanon Anusorn
+                                            School</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
 
-</html>
+                        <div class="contact-category-card">
+                            <div class="category-header ig-bg">
+                                <i class="fab fa-instagram"></i>
+                                <span>Instagram</span>
+                            </div>
+                            <div class="category-body">
+                                <a
+                                    href="https://www.instagram.com/2b.sadaokhanchai/?fbclid=IwY2xjawO4i3tleHRuA2FlbQIxMABicmlkETFIeHI1ZmxnODlqaXN6ODNyc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHl--D0FsPhKIQ_2hA_DKbNzAlPpwMgrZV1Tpr2U8EDEqtCOmAE594sv2b8av_aem_uegztVQHY6E1_971jX2WyQ#"
+                                    class="contact-link-btn">
+                                    <div class="btn-info">
+                                        <strong>2b.sadaokhanchai</strong>
+                                        <span>Sadao Khanchai Kamphalanon Anusorn
+                                            School</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                                <a
+                                    href="https://www.instagram.com/2bkc.friendcorner/?fbclid=IwY2xjawO4i11leHRuA2FlbQIxMABicmlkETFIeHI1ZmxnODlqaXN6ODNyc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHl--D0FsPhKIQ_2hA_DKbNzAlPpwMgrZV1Tpr2U8EDEqtCOmAE594sv2b8av_aem_uegztVQHY6E1_971jX2WyQ#"
+                                    class="contact-link-btn">
+                                    <div class="btn-info">
+                                        <strong>2bkc.friendcorner</strong>
+                                        <span>Sadao Khanchai Kamphalanon Anusorn
+                                            School</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="screen-admin" class="app-screen"
+                    style="display: none;">
+                    <div class="content-box">
+                        <div class="admin-header-logo">
+                            <img src="KCFCAM.png" draggable="false"
+                                alt="Baojai Logo"
+                                class="header-img">
+                        </div>
+                        <div class="admin-list">
+                            <div class="admin-list-item"
+                                onclick="showAdminPopup('นางสาวนันถิวา  วันจิรพัฒน์', 'ผู้จัดการศูนย์เพื่อนใจ', 'admin1.jpg', 'https://www.facebook.com/search/top/?q=nanthiva%20wanjirapat', 'https://www.instagram.com/newwqb_ntw?igsh=cjIxbmx1empjNXo1')">
+                                <div class="admin-avatar">
+                                    <img src="admin1.jpg" draggable="false"
+                                        alt="Admin 1">
+                                </div>
+                                <div class="admin-info-text">
+                                    <span class="admin-name">ADMIN</span>
+                                    <span
+                                        class="admin-role">ผู้จัดการศูนย์เพื่อนใจ</span>
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+
+                            <div class="admin-list-item"
+                                onclick="showAdminPopup('นายศุภนัฐ  วงศ์จันทร์', 'รองผู้จัดการศูนย์เพื่อนใจ', 'admin2.jpg', 'https://www.facebook.com/xa.cheiyn', 'https://www.instagram.com/echiiyn7049?igsh=M285NTM3eXhmbTJh')">
+                                <div class="admin-avatar">
+                                    <img src="admin2.jpg" draggable="false"
+                                        alt="Admin 2">
+                                </div>
+                                <div class="admin-info-text">
+                                    <span class="admin-name">ADMIN</span>
+                                    <span
+                                        class="admin-role">รองผู้จัดการศูนย์เพื่อนใจ</span>
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+
+                            <div class="admin-list-item"
+                                onclick="showAdminPopup('นายอานัส  หัดชุมพร', 'รองผู้จัดการศูนย์เพื่อนใจ', 'admin3.jpg', 'https://www.facebook.com/zun.arnas.2025', 'https://www.instagram.com/zun_111252?igsh=YXdyYjhyeXJ3anM4')">
+                                <div class="admin-avatar">
+                                    <img src="admin3.jpg" draggable="false"
+                                        alt="Admin 2">
+                                </div>
+                                <div class="admin-info-text">
+                                    <span class="admin-name">ADMIN</span>
+                                    <span
+                                        class="admin-role">รองผู้จัดการศูนย์เพื่อนใจ</span>
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+
+                            <div class="admin-list-item"
+                                onclick="showAdminPopup('นายกิตติพัทธ์  แซ่ลิ่ม', 'สมาชิกศูนย์เพื่อนใจ', 'developer.jpg', 'https://www.facebook.com/Not.Kittipat', 'https://www.instagram.com/not_kitti.pat?igsh=Y3Q3aHFubWUzYXd4&utm_source=qr')">
+                                <div class="admin-avatar">
+                                    <img src="developer.jpg" draggable="false"
+                                        alt="Admin 2">
+                                </div>
+                                <div class="admin-info-text">
+                                    <span class="admin-name">Developer</span>
+                                    <span
+                                        class="admin-role">สมาชิกศูนย์เพื่อนใจ</span>
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="admin-modal-overlay" class="modal-overlay"
+                        onclick="closeAdminPopup(event)">
+                        <div class="modal-content"
+                            onclick="event.stopPropagation()">
+                            <button class="modal-close"
+                                onclick="closeAdminPopupForce()">&times;</button>
+
+                            <div class="modal-body">
+                                <div class="modal-avatar-wrapper">
+                                    <img id="modal-img" src alt="Profile">
+                                </div>
+                                <h2 id="modal-name">ชื่อแอดมิน</h2>
+                                <p id="modal-role"
+                                    class="modal-role-badge">ตำแหน่ง</p>
+
+                                <div class="modal-description">
+                                    <p>ข้อมูลการติดต่อ (Contact)</p>
+                                </div>
+
+                                <div class="modal-footer-actions">
+                                    <a id="modal-fb-link" href="#"
+                                        target="_blank"
+                                        class="modal-btn fb-style">
+                                        <i class="fab fa-facebook-f"></i>
+                                        Facebook
+                                    </a>
+
+                                    <a id="modal-ig-link" href="#"
+                                        target="_blank"
+                                        class="modal-btn ig-style">
+                                        <i class="fab fa-instagram"></i>
+                                        Instagram
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <nav class="admin-bottom-nav">
+                    <div id="navIndicator" class="nav-indicator"></div>
+
+                    <div class="nav-item active"
+                        onclick="changePage('chat', this)">
+                        <i class="fas fa-comments"></i>
+                        <span>Baojai Chat</span>
+                    </div>
+                    <div class="nav-item" onclick="changePage('social', this)">
+                        <i class="fas fa-share-alt"></i>
+                        <span>Social Media</span>
+                    </div>
+                    <div class="nav-item"
+                        onclick="changePage('admin-info', this)">
+                        <i class="fas fa-user-shield"></i>
+                        <span>ข้อมูลแอดมิน</span>
+                    </div>
+                </nav>
+
+                <script
+                    src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+                <script
+                    src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+                <script
+                    src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+                <script
+                    src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+
+                <script src="user.js"></script>
+
+            </body>
+
+        </html>

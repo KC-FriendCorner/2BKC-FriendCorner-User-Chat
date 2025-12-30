@@ -16,6 +16,15 @@ body {
     transition: background-color var(--transition-time) ease-in-out;
 }
 
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    /* overflow: hidden;  <-- ถ้ามีบรรทัดนี้ ให้ลบออกหรือคอมเมนต์ไว้ */
+}
+
 /* =============================================== */
 /* 2. ตัวแปรและ Shadow (คงเดิม) */
 /* =============================================== */
@@ -60,7 +69,7 @@ body {
     width: 100%;
     /* max-width: 1200px; */
 
-    min-height: 100%;
+    min-height: 100vh;
     height: 100%;
 
     display: flex;
@@ -68,6 +77,11 @@ body {
     overflow: hidden;
     transition: all var(--transition-time) ease-out;
     overflow-x: hidden;
+    position: relative;
+    -webkit-overflow-scrolling: touch;
+    /* สำคัญมากสำหรับ iOS */
+    overflow-y: auto;
+    /* อนุญาตให้เลื่อนในแนวตั้ง */
 }
 
 @media (min-width: 768px) and (orientation: landscape),
@@ -82,13 +96,79 @@ body {
 /* 4. Welcome/Start Screen (หน้าแรก) */
 /* =============================================== */
 #welcomeScreen {
-    padding: 20px;
-    text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    flex-grow: 1;
     justify-content: center;
+    /* จัดกลางเป๊ะๆ */
+    /* 100% ของ .app-screen ซึ่งหักลบ 70px แล้ว */
+    text-align: center;
+    background: radial-gradient(circle at center, #ffffff 0%, #f9fafb 100%);
+
+    position: relative;
+    min-height: 100vh;
+    /* บังคับให้หน้าจอสูงเต็มจอ */
+    padding-bottom: 60px;
+    /* เว้นที่ว่างด้านล่างเผื่อไว้ */
+
+    width: 100%;
+
+    height: 100vh;
+    /* สูงเท่าความสูงหน้าจอพอดี */
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    animation: welcomeFade 1s ease-out;
+}
+
+@keyframes welcomeFade {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#startScreen {
+
+    /* ดันเนื้อหาที่เหลือลงไปข้างล่าง */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* จัดปุ่มให้อยู่กลางจอพอดี */
+    align-items: center;
+
+    margin-top: -35px;
+    /* ดึงส่วนปุ่มขึ้นมาข้างบน (ปรับตัวเลขตามความเหมาะสม) */
+    width: 100%;
+    gap: 5px;
+    /* ระยะห่างระหว่างปุ่ม */
+}
+
+.footer-credits {
+    position: absolute;
+    /* ล็อคตำแหน่ง */
+    bottom: 70px;
+    /* ห่างจากขอบล่าง 20px */
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-family: 'Sarabun', sans-serif;
+    color: #666;
+    /* สีเทาอ่อนๆ เพื่อไม่ให้เด่นเกินไป */
+    font-size: 13px;
+    line-height: 0.65;
+    padding: 20px 0;
+}
+
+.footer-credits strong {
+    color: #333;
+    /* ชื่อทีมพัฒนาให้เข้มขึ้นเล็กน้อย */
+    font-weight: 600;
 }
 
 #logoArea {
@@ -96,6 +176,8 @@ body {
     justify-content: center;
     align-items: center;
     margin-bottom: 20px;
+
+    animation: fadeInDown 0.8s ease-out both;
 }
 
 #logoArea img {
@@ -105,6 +187,21 @@ body {
     object-fit: cover;
     border-radius: 50%;
     border: 3px solid transparent;
+
+
+    transition: transform 0.3s ease;
+
+    /* ให้โลโก้ลอยขึ้นลงเบาๆ (Floating Animation) */
+    animation: floatingLogo 3s ease-in-out infinite;
+}
+
+/* ให้โลโก้แต่ละตัวลอยจังหวะต่างกัน */
+#logoArea img:nth-child(2) {
+    animation-delay: 0.5s;
+}
+
+#logoArea img:nth-child(3) {
+    animation-delay: 1s;
 }
 
 /* ⚠️ สไตล์เดิมสำหรับข้อความ (ถ้ายังมีการใช้) */
@@ -124,21 +221,62 @@ body {
     display: block;
     margin-left: auto;
     margin-right: auto;
+    filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.1));
+    animation: popIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+    animation: floatingLogo 3s ease-in-out infinite;
 }
 
 #userInfoArea {
-    width: 100%;
-    margin-bottom: 20px;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-    display: flex;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 8px 18px;
+    display: inline-flex;
+    /* ปรับขนาดตามความยาว ID */
+    align-items: center;
     justify-content: center;
+    border: 1px solid rgba(233, 30, 99, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin: 15px 0;
+    transition: all 0.3s ease;
+    animation: idPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes idPop {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+#userIdDisplay::before {
+    content: "\f007";
+    /* ไอคอน User จาก FontAwesome */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    margin-right: 8px;
+    font-size: 12px;
+    color: #e91e63;
 }
 
 .user-info-text {
-    color: var(--system-text);
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+    letter-spacing: 0.5px;
+    margin: 0;
+    font-family: 'Sarabun', sans-serif;
+}
+
+#userInfoArea:active {
+    transform: scale(0.95);
+    background: rgba(233, 30, 99, 0.05);
 }
 
 #mainActions {
@@ -170,15 +308,63 @@ body {
     max-width: 300px;
 }
 
-.primary-button {
-    background-color: var(--primary-color);
-    color: white;
+/* อนิเมชั่นโลโก้ลอยขึ้นลง */
+@keyframes floatingLogo {
+    0% {
+        transform: translateY(0px);
+        filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.1));
+    }
+
+    50% {
+        transform: translateY(-10px);
+        filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.05));
+    }
+
+    100% {
+        transform: translateY(0px);
+        filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.1));
+    }
 }
+
+/* อนิเมชั่นเลื่อนจากบนลงล่าง */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+.primary-button {
+    background: linear-gradient(135deg, var(--primary-color), #d32f2f);
+    color: white;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(165, 28, 48, 0.25);
+    /* เงาสีแดงจางๆ ตามสีปุ่ม */
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    align-items: center;
+}
+
+.primary-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 5px 15px rgba(233, 30, 99, 0.2);
+}
+
 
 .primary-button:hover {
     background-color: var(--primary-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(165, 28, 48, 0.35);
 }
 
 .secondary-button {
@@ -188,13 +374,19 @@ body {
     /* 🔑 [EDIT] เพิ่มขอบ 1px กลับเข้าไป */
     border: 1px solid #DEE2E6;
     box-shadow: var(--shadow-low);
+
+    background: rgba(255, 255, 255, 0.9);
+    padding: 12px 25px;
+    border-radius: 50px;
+    margin-top: 10px;
+    transition: all 0.2s;
 }
 
 .secondary-button:hover {
     /* 🔑 [EDIT] ปรับสีพื้นหลังตอน Hover */
     background-color: #F8F9FA;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-medium);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(165, 28, 48, 0.35);
 }
 
 #authButton {
@@ -202,141 +394,599 @@ body {
     max-width: 300px;
     margin-left: auto;
     margin-right: auto;
+    animation: pulseButton 2s infinite;
+}
+
+@keyframes pulseButton {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.03);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* =============================================== */
 /* 6. Chat Panel (Messenger Style Header) */
 /* =============================================== */
 #chatScreen {
-    display: flex;
+    /* จะถูกเปลี่ยนเป็น flex ใน JS */
     flex-direction: column;
-    flex-grow: 1;
-    height: 100%;
-    background-color: var(--chat-bg);
+    height: 100vh;
+    /* สูงเท่าจอภาพพอดี */
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #f5f7fb;
+    overflow: hidden;
+    /* ห้ามตัวแม่เลื่อนเอง */
+    z-index: 10000;
+
+    display: none;
+    height: -webkit-fill-available;
+    /* สำหรับ iOS Safari */
 }
 
 #chatHeader {
     padding: 12px 15px;
-    background-color: var(--primary-color);
-    color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-weight: 500;
+    font-weight: 700;
+    color: white;
+    position: relative;
+    overflow: hidden;
 
-    /* 🔑 [CRITICAL FIX]: เพิ่มเงาที่เข้มขึ้นและยาวลงมาเพื่อให้ดูมีมิติ */
-    /* เดิม: box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
-    box-shadow: 0 5px 8px rgba(0, 0, 0, 0.3);
+    /* 1. ชมพูหลายเฉด: ไล่จากชมพูเข้ม > ชมพูสด > ชมพูอ่อน (เห็นความต่างชัดเจน) */
+    background: linear-gradient(to right,
+            #c2185b 0%,
+            #e91e63 25%,
+            #ff4081 50%,
+            #f06292 75%,
+            #f8bbd0 100%);
+    background-size: 200% auto;
+    animation: pinkFlow 5s ease infinite alternate;
+    /* ให้สีชมพูขยับไหลไปมา */
 
-    /* 💡 เพิ่ม: เพื่อให้เงาดูนุ่มนวลเมื่อมีการเปลี่ยนสีในอนาคต */
-    transition: box-shadow var(--transition-time) ease-in-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* --- ลายเส้นทองสว่างระยิบระยับ (Sparkling Gold Lines) --- */
+#chatHeader::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* เส้นทองสว่างแบบเนียนๆ */
+    background: repeating-linear-gradient(45deg,
+            rgba(255, 215, 0, 0.15) 0px,
+            rgba(255, 215, 0, 0.15) 2px,
+            transparent 2px,
+            transparent 15px);
+    pointer-events: none;
+}
+
+/* --- ลำแสงทองสว่างวิ่งตัดหน้า (Bright Gold Flash) --- */
+#chatHeader::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 30%;
+    height: 100%;
+    /* แสงทองสว่างจ้า */
+    background: linear-gradient(to right,
+            transparent,
+            rgba(255, 255, 255, 0.3),
+            rgba(255, 223, 0, 0.6),
+            rgba(255, 255, 255, 0.3),
+            transparent);
+    transform: skewX(-30deg);
+    animation: brightFlash 5s infinite;
+}
+
+/* --- Animations --- */
+
+/* อนิเมชั่นสีชมพูไหล */
+@keyframes pinkFlow {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 100% 50%;
+    }
+}
+
+/* อนิเมชั่นแสงทองวิ่ง */
+@keyframes brightFlash {
+    0% {
+        left: -120%;
+    }
+
+    30% {
+        left: 150%;
+    }
+
+    100% {
+        left: 150%;
+    }
+}
+
+/* ปรับฟอนต์ให้มีเงาตัดกับพื้นหลัง */
+#chatHeader span,
+#chatHeader i {
+    position: relative;
+    z-index: 10;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* ดันเนื้อหา (ข้อความ/ปุ่ม) ให้อยู่เหนือลวดลายทอง */
+#chatHeader>* {
+    position: relative;
+    z-index: 1;
 }
 
 #chatTitle {
+    font-size: 17px;
+    font-weight: 700;
+    color: #ffffff;
     flex-grow: 1;
     text-align: center;
-    font-size: 1.1rem;
-    margin-right: -10px;
-    font-weight: 600;
+    font-family: 'Sarabun', sans-serif;
+    letter-spacing: -0.2px;
 }
 
 #homeButton {
     background-color: rgba(255, 255, 255, 0.1);
     color: white;
-    border: none;
     padding: 6px 10px;
     border-radius: 11px;
     cursor: pointer;
     transition: background-color var(--transition-time);
     font-weight: 500;
+
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(5px);
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+#homeButton:active {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(0.95);
 }
 
 #homeButton:hover {
     background-color: rgba(255, 255, 255, 0.25);
 }
 
+#chatHeader #homeButton {
+    background: #f0f0f0;
+    /* เทาอ่อน */
+    color: #555;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+#chatHeader #homeButton i {
+    font-size: 16px;
+    color: #e91e63;
+    /* ไอคอนสีชมพู */
+}
+
+#chatHeader #homeButton:active {
+    transform: scale(0.92);
+    background: #e9e9e9;
+}
+
+/* แทนที่ div เปล่า เพื่อให้ชื่ออยู่กึ่งกลางจริงๆ */
+.header-right-placeholder {
+    width: 80px;
+    /* ขนาดใกล้เคียงกับปุ่ม Home ฝั่งซ้าย */
+    display: flex;
+    justify-content: flex-end;
+}
+
+#chatHeader::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    /* สีทองไล่เฉด (Gold Gradient) */
+    background: linear-gradient(90deg,
+            #d4af37, #f9f295, #e6be8a, #b8860b, #d4af37);
+    background-size: 200% 100%;
+    animation: goldFlow 4s linear infinite;
+    z-index: 2;
+}
+
+@keyframes goldFlow {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 200% 50%;
+    }
+}
+
 /* =============================================== */
 /* 7. Chat Box และ Input (Messenger Style Input) */
 /* =============================================== */
 #chatBox {
-    flex-grow: 1;
-    padding: 10px 15px;
-    overflow-y: auto;
-    background-color: var(--chat-bg);
-    min-height: 50px;
-    overflow-x: hidden;
+    flex: 1;
+    overflow-y: auto !important;
+    padding: 10px 0px;
+
+    /* เพิ่มส่วนนี้: เว้นระยะด้านล่างให้พ้นจากช่องพิมพ์ */
+    padding-bottom: 80px;
+
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    -webkit-overflow-scrolling: touch;
+
+    /* บังคับให้ Scrollbar จบแค่ขอบบนของ input */
+    box-sizing: border-box;
+
+    flex-grow: 1;
+    /* ให้กล่องแชทกินพื้นที่ที่เหลือทั้งหมด */
+
+    height: calc(100vh - 140px);
+    /* บังคับความสูง โดยหักลบพื้นที่ Header และ Input */
+
+    position: relative;
+    /* เพื่อให้ลูกข้างในอ้างอิงตำแหน่งได้ */
+    background: transparent;
+    /* ให้พื้นหลังหลักโปร่งใสเพื่อโชว์รูปข้างหลัง */
+
+    background-image: url('bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    /* 🚩 คำสั่งล็อกรูปให้นิ่ง */
+    background-attachment: fixed;
+
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+#chatBox::before {
+    content: "";
+    position: fixed;
+    /* ล็อกไว้กับหน้าจอ */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    /* ส่งไปอยู่หลังสุด */
+
+    background-image: url('ชื่อรูปภาพของคุณ.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    /* ถ้ารูปสว่างไป ใส่ Overlay ทับได้ที่นี่ */
+    background-color: rgba(0, 0, 0, 0.1);
+    background-blend-mode: overlay;
+}
+
+/* อย่าลืมตั้งค่าให้ข้อความอยู่เหนือ Overlay */
+.message-container {
+    position: relative;
+    z-index: 1;
 }
 
 .input-area {
+    min-height: 60px;
+    /* ความสูงเริ่มต้น */
+    background: white;
+    border-top: 1px solid #ddd;
     padding: 10px 15px;
-    /* border-top: 1px solid #ddd; */
-    /* 🔑 ลบ Border เดิมออก */
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    /* รองรับ iPhone */
+    flex-shrink: 0;
+    /* ห้ามโดนเบียด */
     display: flex;
     align-items: flex-end;
-    flex-shrink: 0;
-    background-color: #ffffff;
-    /* 💡 เพิ่ม: เงาให้นุ่มนวลเหนือ Input Area */
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+    gap: 8px;
 }
 
-#chatInput {
-    flex-grow: 1;
-    padding: 10px 15px;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    resize: none;
-    margin-right: 10px;
-    font-size: 0.9rem;
-    font-family: 'Sarabun', sans-serif;
-    line-height: 1.4;
-    max-height: 80px;
-    /* 💡 เพิ่ม: Transition สำหรับ transform และ box-shadow */
-    transition: border-color var(--transition-time), box-shadow var(--transition-time), transform var(--transition-time);
+/* เมื่อหน้าแชทเปิดอยู่ ให้สั่งซ่อน Nav แบบเด็ดขาด */
+body.is-chatting .admin-bottom-nav {
+    transform: translateY(100%) !important;
+    opacity: 0 !important;
+    pointer-events: none;
 }
 
-#chatInput:focus {
-    border-color: var(--primary-color);
-    /* 💡 เพิ่ม: เงาเมื่อโฟกัสให้ดูเด่นขึ้น */
-    box-shadow: 0 0 0 1px var(--primary-color), 0 1px 3px rgba(0, 0, 0, 0.1);
-    /* 💡 เพิ่ม: ขยายเล็กน้อยเมื่อโฟกัส */
-    transform: scale(1.005);
+/* --- Modern Chat Header --- */
+.chat-header-modern {
+    background: #fff;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
 }
 
-#sendButton {
-    background-color: var(--primary-color);
-    color: white;
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.back-btn {
+    background: none;
     border: none;
+    font-size: 18px;
+    color: #555;
+    cursor: pointer;
+}
+
+.header-info #chatTitle {
+    display: block;
+    font-weight: 700;
+    color: #333;
+    font-size: 16px;
+}
+
+.online-status {
+    font-size: 10px;
+    color: #4CAF50;
+}
+
+/* --- Chat Box Space --- */
+.chat-box-modern {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #f9f9fb;
+    /* สีพื้นหลังแชทที่ดูสบายตา */
+    background-image: radial-gradient(#e5e5f7 0.5px, transparent 0.5px);
+    /* ลายจุดจางๆ */
+    background-size: 20px 20px;
+}
+
+/* --- Message Bubbles ปรับโฉมใหม่ --- */
+.message-container {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+
+    max-width: 90%;
+    /* เพิ่มจาก 70-80% เป็น 90% เพื่อให้ข้อความยาวชิดขอบอีกฝั่งได้มากขึ้น */
+}
+
+.user-container {
+    align-items: flex-end;
+    align-self: flex-end;
+}
+
+.admin-container {
+    display: flex !important;
+    flex-direction: row !important;
+    /* 🚩 บังคับเรียงแนวนอน */
+    align-items: flex-end;
+    /* 🚩 ดันเวลาลงไปอยู่ขอบล่าง */
+    justify-content: flex-start;
+
+    margin-left: 15px;
+    margin-right: auto;
+    margin-bottom: 12px;
+    max-width: 85%;
+    /* เพิ่มความกว้างอีกนิดให้ดูไม่อึดอัด */
+
+    /* ป้องกันการคลุมดำ/คัดลอก (ถ้าต้องการ) */
+    -webkit-user-select: none;
+    user-select: none;
+
+    /* ❌ ลบ pointer-events: none !important ออก เพื่อให้คลิกดูรูปหรือกดปุ่มในแชทได้ */
+}
+
+.user-bubble {
+    background: linear-gradient(135deg, #ff5c8d, #e91e63);
+    /* ไล่สีชมพู */
+    color: white;
+    border-radius: 20px 20px 4px 20px;
+    box-shadow: 0 4px 15px rgba(255, 0, 85, 0.2);
+    padding: 10px 16px;
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.admin-bubble {
+    background: white !important;
+    color: #333;
+    border-radius: 20px 20px 20px 4px;
+    border: 1px solid #efefef;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    padding: 10px 16px;
+    pointer-events: none;
+    display: inline-block;
+    /* ให้กว้างเท่าเนื้อหา */
+    transition: transform 0.2s ease;
+    flex-shrink: 1;
+    /* ยอมให้หดได้ถ้าที่ว่างไม่พอ */
+    word-wrap: break-word;
+    /* ตัดคำอัตโนมัติ */
+    max-width: 70%;
+    /* จำกัดความกว้างบับเบิ้ลเพื่อให้มีที่ว่างสำหรับเวลา */
+    margin-bottom: 0;
+    background-color: #f0f0f0;
+}
+
+
+.message-time {
+    font-size: 10px;
+    color: #999 !important;
+    margin-top: 5px;
+}
+
+/* คอนเทนเนอร์หลัก: เพิ่มพื้นหลังไล่เฉดชมพูจางๆ และเส้นขอบทอง */
+.input-container-modern {
+    flex-shrink: 0;
+    /* ไล่เฉดชมพู 3 เฉดให้ดูละมุน */
+    background: linear-gradient(to bottom, #ffffff, #fff5f8, #fce4ec);
+    padding: 10px;
+    /* ขอบทองสว่างด้านบน */
+    border-top: 2px solid #ffd700;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    position: relative;
+    width: 100%;
+    z-index: 1000;
+    box-sizing: border-box;
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* แถบหุ้มช่องพิมพ์: เพิ่มขอบทองบางๆ และลูกเล่นแสงวิ่ง */
+.input-wrapper {
+    display: flex;
+    gap: 10px;
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 5px 10px 5px 20px;
+    margin: 5px 10px;
+    box-sizing: border-box;
+    width: auto;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    /* สำหรับแสงวิ่ง */
+    /* ขอบทองจางๆ */
+    border: 1.5px solid rgba(212, 175, 55, 0.3);
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* เอฟเฟกต์แสงทองวิ่งผ่าน (Golden Sweep) */
+.input-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.15), transparent);
+    transform: skewX(-20deg);
+    animation: goldShine 8s infinite;
+}
+
+/* เมื่อกดพิมพ์: เรืองแสงสีทอง-ชมพู */
+.input-wrapper:focus-within {
+    background: #fff;
+    border-color: #ffd700;
+    /* ขอบทองสว่างขึ้น */
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), 0 8px 25px rgba(233, 30, 99, 0.1);
+    transform: translateY(-2px);
+}
+
+/* ช่องพิมพ์ข้อความ */
+#chatInput {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 10px 0;
+    min-height: 30px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 16px;
+    color: #444;
+    background: transparent;
+    z-index: 2;
+    width: 0;
+    max-height: 120px;
+}
+
+/* ปุ่มส่งแบบทองสว่างจ้า (Bright Gold Gradient) */
+.send-btn-modern,
+#sendButton {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    /* ไล่เฉดทองสว่างแบบ Metallic */
+    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7);
+    background-size: 200% 200%;
+    color: #5d4037;
+    /* สีไอคอนเข้มเพื่อให้ตัดกับทอง */
+    border: none;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1rem;
-    /* 💡 แก้ไข: ใช้ transition: all เพื่อครอบคลุมทั้งสี, transform, และเงา */
-    transition: all var(--transition-time) cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    box-shadow: var(--shadow-medium);
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(184, 134, 11, 0.4);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: goldPulse 4s infinite;
+    /* ปุ่มเต้นเป็นจังหวะทอง */
 }
 
+/* อนิเมชั่นปุ่มส่ง */
+.send-btn-modern:hover,
 #sendButton:hover {
-    background-color: var(--primary-hover);
-    /* 💡 เพิ่ม: Animation เมื่อชี้เมาส์ (ยกขึ้นเล็กน้อย) */
-    transform: translateY(-2px) scale(1.05);
-    /* 💡 เพิ่ม: เงาที่หนาขึ้นเมื่อชี้เมาส์ */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transform: scale(1.15) rotate(-10deg);
+    filter: brightness(1.2);
+    box-shadow: 0 6px 15px rgba(255, 215, 0, 0.6);
 }
 
-#sendButton:active {
-    /* 💡 เพิ่ม: Effect เมื่อกด (ยุบลงเล็กน้อย) */
-    transform: translateY(-1px) scale(0.98);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+/* --- อนิเมชั่นประกอบ --- */
+
+/* แสงวิ่งผ่านกล่องพิมพ์ */
+@keyframes goldShine {
+    0% {
+        left: -150%;
+    }
+
+    20% {
+        left: 150%;
+    }
+
+    100% {
+        left: 150%;
+    }
 }
 
-#sendButton i {
-    margin-right: 0 !important;
+/* ปุ่มเรืองแสงเข้า-ออก */
+@keyframes goldPulse {
+    0% {
+        box-shadow: 0 4px 10px rgba(184, 134, 11, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 4px 20px rgba(255, 215, 0, 0.6);
+    }
+
+    100% {
+        box-shadow: 0 4px 10px rgba(184, 134, 11, 0.4);
+    }
+}
+
+/* ปรับไอคอนให้ดูคมชัด */
+#sendButton i,
+.send-btn-modern i {
+    font-size: 1.1rem;
+    text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.5);
 }
 
 /* =============================================== */
@@ -345,7 +995,9 @@ body {
 
 /* 🎯 8.1 Base Message Container: ทำให้ Container ย่อขนาดตามเนื้อหา */
 .message-container {
-    display: block;
+    display: flex !important;
+    align-items: flex-end !important;
+    /* ทุกอย่างในนี้จะวางชิดขอบล่างสุด */
     /* 🔑 [KEEP] Bubble ยังคงจำกัดความกว้างที่ 80% ของพื้นที่แชท */
     max-width: 80%;
     margin-bottom: 2px;
@@ -384,22 +1036,59 @@ body {
 
 /* --- 8.5 Message Bubble Style (Rounded Corners & Colors) --- */
 .message-bubble {
-    padding: 6px 12px;
+    margin: 0;
+    /* มั่นใจว่าไม่มี margin ส่วนเกิน */
     border-radius: var(--border-radius-bubble);
     line-height: 1.4;
     font-size: 15px;
     word-wrap: break-word;
     white-space: pre-wrap;
     /* 💡 แก้ไข: ใช้ Shadow ที่เบาลงเล็กน้อยสำหรับ Bubble */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     display: block;
-    position: static;
     max-width: 100%;
     /* 💡 เพิ่ม: Transition สำหรับเงาและ Transform */
     transition: box-shadow var(--transition-time) ease-in-out, transform var(--transition-time) ease-out;
-    /* 🔑 [CRITICAL FIX]: ป้องกันการเลือกข้อความบน iOS/Mobile */
-    -webkit-user-select: none;
-    user-select: none;
+
+    pointer-events: auto !important;
+    /* บังคับให้รับแรงกด/คลิก */
+    /* ทำให้ Cursor เปลี่ยนเป็นรูปมือเมื่อชี้ (บนคอม) เพื่อทดสอบ */
+    cursor: pointer !important;
+
+    /* ยืนยันตำแหน่งเพื่อให้ Layer ชัดเจน */
+    position: relative;
+    z-index: 10;
+    cursor: context-menu;
+    /* เปลี่ยนรูปเมาส์ให้รู้ว่าคลิกขวาได้ */
+
+
+    /* ป้องกันเมนูเลือกข้อความของ iOS */
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+
+    /* ช่วยให้การแตะตอบสนองไวขึ้น */
+    touch-action: manipulation;
+
+    padding: 6px 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    /* เพิ่มเงานิดๆ ให้ดูมีมิติ */
+    transition: all 0.2s ease;
+}
+
+.user-container .message-bubble {
+    /* อนุญาตให้กดค้างได้เฉพาะข้อความเรา */
+    cursor: pointer;
+}
+
+.message-bubble {
+    cursor: context-menu;
+    /* เปลี่ยนรูปเมาส์ให้รู้ว่าคลิกขวาได้ */
+    transition: transform 0.2s active;
+}
+
+.chat-messages-container {
+    position: relative;
+    z-index: 1;
 }
 
 /* 🚩 เพิ่ม Hover Effect */
@@ -411,14 +1100,6 @@ body {
 /* ---------------------------------------------------- */
 /* A. ADMIN BUBBLES (ชิดซ้าย) */
 /* ---------------------------------------------------- */
-.admin-container {
-    margin-right: auto;
-    margin-left: 0;
-    display: flex;
-    align-items: flex-end;
-    flex-direction: row;
-    justify-content: flex-start;
-}
 
 .admin-bubble {
     background-color: var(--admin-bubble-bg);
@@ -453,6 +1134,8 @@ body {
     align-items: flex-end;
     flex-direction: row-reverse;
     justify-content: flex-end;
+    -webkit-touch-callout: none;
+    /* หรือปล่อยว่างไว้ถ้าต้องการให้ใช้ Context Menu ที่เราสร้างเอง */
 }
 
 .user-bubble {
@@ -491,6 +1174,13 @@ body {
 /* 🎯 Time Stamp สำหรับ Admin (อยู่ด้านขวาของ Bubble) */
 .admin-container .message-time {
     order: 2;
+    font-size: 11px;
+    color: #999;
+    white-space: nowrap;
+    /* 🚩 ปรับตรงนี้: ดึงเวลาลงมาให้เท่ากับขอบล่างบับเบิ้ล */
+    margin-bottom: 3px;
+    align-self: flex-end;
+    /* ย้ำว่าให้ชิดขอบล่างคอนเทนเนอร์ */
 }
 
 /* 🚩 Time Stamp สำหรับ User (อยู่ด้านซ้ายของ Bubble) */
@@ -504,33 +1194,128 @@ body {
 /* =============================================== */
 
 #contextMenu {
-    position: fixed;
     background-color: white;
     border: 1px solid #DEE2E6;
-    border-radius: 11px;
-    box-shadow: var(--shadow-medium);
-    z-index: 1000;
+    border-radius: 111px;
     display: none;
-    min-width: 50px;
     overflow: hidden;
     transition: opacity var(--transition-time);
+    background: white;
+    animation: fadeIn 0.15s ease-out;
+    transition: transform 0.1s ease;
+    transform-origin: top right;
+    /* ถ้าหันซ้าย ให้งอกจากขวามาซ้าย */
+    transition: opacity 0.2s ease;
+    position: fixed;
+    z-index: 99999;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 10px 20px -5px rgba(0, 0, 0, 0.15),
+        0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    transform: translateX(-100%);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s;
+    transform: translateX(-100%) scale(0.9);
+}
+
+#contextMenu.active {
+    display: block;
+    /* ต้องใช้คู่กับ JS ในการคุมการแสดงผล */
+    opacity: 1;
+    transform: translateX(-100%) scale(1);
+    pointer-events: auto;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .context-menu-option {
-    padding: 10px 15px;
-    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    /* ปรับให้กระชับขึ้นเล็กน้อย */
     font-size: 14px;
-    color: #333;
-    transition: background-color var(--transition-time);
+    color: #ff4081;
+    /* สีชมพูเดิมของคุณ */
+    font-weight: 500;
+    cursor: pointer;
+    margin: 4px;
+    /* เว้นระยะห่างจากขอบเมนูเล็กน้อย */
+    border-radius: 10px;
+    /* ความมนที่ดูทันสมัยสไตล์แอปยุคใหม่ */
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    background: transparent;
+}
+
+/* เอฟเฟกต์ตอนเอาเมาส์วาง */
+.context-menu-option:hover {
+    background: rgba(255, 64, 129, 0.08);
+    /* พื้นหลังชมพูจางๆ */
+    color: #f50057;
+    /* เข้มขึ้นเล็กน้อยเมื่อโฟกัส */
+    transform: translateX(4px);
+    /* เลื่อนขวาเบาๆ ให้ดูเลิศ */
+}
+
+/* เอฟเฟกต์ตอนกด */
+.context-menu-option:active {
+    transform: scale(0.97);
+    /* บุ๋มลงนิดๆ ดูแพงมาก */
+    background: rgba(255, 64, 129, 0.15);
 }
 
 #deleteOption {
-    color: var(--primary-color);
-    font-weight: 500;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 12px 18px;
+    /* เพิ่ม padding ให้ดูโปร่ง ไม่อึดอัด */
+    border-radius: 12px;
+    /* เปลี่ยนจาก 30px เป็น 12px จะดู Modern กว่าสำหรับเมนู */
+    color: #ff3b30;
+    font-weight: 600;
+    gap: 0;
+    /* ใช้ margin ที่ไอคอนแทนเพื่อคุมระยะได้แม่นกว่า */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* ใช้ curve การเคลื่อนไหวที่สมูทขึ้น */
+    background: transparent;
 }
 
-.context-menu-option:hover {
-    background-color: #F0F4F8;
+#deleteOption:hover {
+    background-color: #ff2d55 !important;
+    /* แดงเข้มขึ้น */
+    transform: scale(1.05);
+    /* ปุ่มขยายใหญ่ขึ้นนิดนึง */
+    box-shadow: 0 6px 20px rgba(255, 59, 48, 0.4) !important;
+}
+
+#deleteOption:active {
+    transform: scale(0.95);
+    /* ตอนกดให้ปุ่มบุ๋มลง */
+}
+
+#deleteOption i {
+    font-size: 16px;
+    /* ปรับไอคอนให้เด่นขึ้นนิดนึง */
+    width: 20px;
+    /* ล็อกความกว้างไอคอนเพื่อให้ตัวหนังสือตรงกันเสมอ */
+    margin-right: 12px;
+    transition: transform 0.2s ease;
+}
+
+#deleteOption:hover i {
+    transform: rotate(-10deg);
+    /* ลูกเล่นไอคอนเอียงนิดๆ ตอนเอาเมาส์วาง */
 }
 
 /* =============================================== */
@@ -594,33 +1379,344 @@ body {
     justify-content: center;
     align-items: center;
     animation: fadeIn 0.3s ease-out;
+
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    /* ทำให้พื้นหลังเบลอ */
 }
 
-/* กล่องข้อความ */
+/* ========================================= */
+/* 1. OVERLAY - พื้นหลังเบลอแบบมีมิติและแสงสะท้อน */
+/* ========================================= */
+#welcome-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    /* พื้นหลังมืดลงแต่ไม่ทึบ */
+    backdrop-filter: blur(20px) brightness(0.8);
+    /* เบลอหนักๆ + ทำให้มืดลงอีกนิด */
+    -webkit-backdrop-filter: blur(20px) brightness(0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    /* เริ่มต้นซ่อนไว้ */
+    transition: opacity 0.4s ease-out;
+    /* ค่อยๆ Fade-in Overlay */
+}
+
+#welcome-popup-overlay.active {
+    opacity: 1;
+}
+
+/* ========================================= */
+/* 2. POPUP CONTENT - กล่อง Popup สุดพรีเมียม */
+/* ========================================= */
 .popup-content {
-    font-family: 'Sarabun', sans-serif;
-    /* ให้ใช้ฟอนต์เดียวกับเว็บของคุณ */
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.15);
+    /* โปร่งแสงจัดๆ */
+    backdrop-filter: blur(30px) saturate(180%);
+    /* เบลอและอิ่มตัวสีมากขึ้น */
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+
+    border-radius: 40px;
+    /* ขอบโค้งแบบ Ultra-Modern */
+    padding: 40px 30px;
+    width: 75%;
+    max-width: 420px;
+    /* ใหญ่ขึ้นเล็กน้อย */
     text-align: center;
-    max-width: 90%;
-    /* กันไม่ให้ล้นหน้าจอมือถือ */
-    width: 400px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    /* ซ่อนองค์ประกอบที่อาจล้นขอบ */
+
+    /* เส้นขอบแสง (Vibrant Rim Light) */
+    border: 2px solid rgba(255, 255, 255, 0.6);
+
+    /* เงาฟุ้งแบบมิติลึก (3D Depth Shadow) */
+    box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.35),
+        /* เงาหลักที่สร้างความลึก */
+        0 0 0 1px rgba(255, 255, 255, 0.3) inset,
+        /* Inner highlight */
+        0 0 100px rgba(233, 30, 99, 0.2) inset;
+    /* Soft inner glow */
+
+    /* อนิเมชั่นเด้ง + Fade-in (เริ่มต้น) */
+    transform: scale(0.7) translateY(50px);
+    opacity: 0;
+    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.6s ease-out;
 }
 
-/* ปุ่มปิด */
-#close-popup {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: #D81B60;
+#welcome-popup-overlay.active .popup-content {
+    /* เพิ่ม Animation เข้าไปในคลาสเดิม */
+    animation: popupAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+        floatPopup 4s ease-in-out infinite 0.6s;
+}
+
+@keyframes floatPopup {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* ========================================= */
+/* 3. ELEMENTS INSIDE POPUP - จัดแต่งองค์ประกอบภายใน */
+/* ========================================= */
+
+.popup-title {
+    /* ใช้ Gradient สำหรับตัวอักษร */
+    background: linear-gradient(90deg, #e91e63, #ff80ab, #e91e63);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    /* ใส่ Animation แสงวิ่ง */
+    animation: shineTitle 3s linear infinite;
+
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+@keyframes shineTitle {
+    to {
+        background-position: 200% center;
+    }
+}
+
+/* คำบรรยาย */
+.popup-description p {
+    color: #f0f0f0;
+    /* สีขาวอมเทาอ่อนๆ */
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 25px;
+
+    opacity: 0;
+    animation: fadeInSlideUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards 0.4s;
+}
+
+/* กล่องคำเตือน */
+.popup-warning {
+    background: rgba(255, 255, 255, 0.2);
+    /* โปร่งแสงเบาๆ */
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    padding: 12px 15px;
+    margin: 25px 0;
+
+    font-size: 13px;
+    color: #ffcc00;
+    /* สีเหลืองทองเพื่อเตือน */
+    font-weight: 700;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    /* เพิ่มเงาให้ตัวอักษรเด่น */
+
+    opacity: 0;
+    animation: fadeInSlideUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards 0.6s;
+}
+
+.popup-warning p {
+    margin: 0;
+}
+
+/* ลบ margin เริ่มต้นของ p */
+
+/* ส่วนเครดิต */
+.popup-credit {
+    margin-top: 30px;
+    opacity: 0;
+    animation: fadeInSlideUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards 0.8s;
+}
+
+.popup-credit .dev-by {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 11px;
+    margin-bottom: 5px;
+}
+
+.popup-credit .club-name {
+    color: #ff80ab;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin: 5px 0;
+    text-shadow: 0 3px 8px rgba(255, 128, 171, 0.3);
+}
+
+.popup-credit .school-name {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+}
+
+.action-button {
+    position: relative;
+    overflow: hidden;
+    /* เพื่อให้แสงวิ่งอยู่แค่ในปุ่ม */
+    background: linear-gradient(135deg, #e91e63, #ff5c8d);
     color: white;
     border: none;
-    border-radius: 11px;
+    padding: 18px 45px;
+    border-radius: 50px;
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 30px;
+    width: 65%;
     cursor: pointer;
-    animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 20px rgba(233, 30, 99, 0.3);
+
+    /* Animation ปุ่มเต้นเบาๆ */
+    animation: pulseButton 2s infinite;
+    transition: all 0.3s ease;
+}
+
+/* เอฟเฟกต์แสงวิ่งผ่านปุ่มทุกๆ 3 วินาที */
+.action-button::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 20%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: rotate(30deg);
+    animation: lightMove 3s infinite;
+}
+
+@keyframes pulseButton {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 10px 20px rgba(233, 30, 99, 0.3);
+    }
+
+    50% {
+        transform: scale(1.03);
+        box-shadow: 0 15px 30px rgba(233, 30, 99, 0.5);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 10px 20px rgba(233, 30, 99, 0.3);
+    }
+}
+
+@keyframes lightMove {
+    0% {
+        left: -60%;
+    }
+
+    50% {
+        left: 120%;
+    }
+
+    100% {
+        left: 120%;
+    }
+}
+
+/* เมื่อเอาเมาส์ไปชี้ ให้หยุดเต้นและขยายขึ้น */
+.action-button:hover {
+    animation: none;
+    transform: translateY(-3px) scale(1.05);
+    filter: brightness(1.1);
+}
+
+.action-button:active {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 5px 10px rgba(233, 30, 99, 0.2);
+}
+
+/* ========================================= */
+/* 4. KEYFRAMES - อนิเมชั่นหลัก */
+/* ========================================= */
+
+/* สำหรับองค์ประกอบที่ค่อยๆ Fade-in และเลื่อนขึ้นมา */
+@keyframes fadeInSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* เพิ่มแสงเรืองรอบ Popup */
+@keyframes glowPulse {
+    0% {
+        box-shadow: 0 0 0 0px rgba(233, 30, 99, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 0 15px rgba(233, 30, 99, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0px rgba(233, 30, 99, 0.3);
+    }
+}
+
+/* ส่วนเครดิตด้านล่าง */
+.dev-by {
+    color: #888;
+    font-size: 10px;
+    margin-bottom: 5px;
+}
+
+.club-name {
+    color: #e91e63;
+    font-size: 10px !important;
+    line-height: 0.9 !important;
+    margin: 5px 0;
+}
+
+.school-name {
+    color: #555;
+    font-size: 12px;
+}
+
+/* ปุ่มกด */
+#close-popup {
+    background: linear-gradient(135deg, #e91e63, #ff5c8d);
+    color: white;
+    border: none;
+    padding: 14px 40px;
+    border-radius: 50px;
+    font-weight: 600;
+    margin-top: 25px;
+    box-shadow: 0 8px 20px rgba(233, 30, 99, 0.3);
+    transition: all 0.3s ease;
+}
+
+#close-popup:active {
+    transform: scale(0.95);
+}
+
+/* อนิเมชั่น */
+@keyframes popupAppear {
+    from {
+        transform: scale(0.8) translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
 }
 
 #close-popup:hover {
@@ -701,8 +1797,10 @@ body {
     /* เรียงเป็นแนวตั้งเพื่อให้กดง่ายในมือถือ */
     gap: 20px !important;
     margin: 20px 0;
-    max-width: 250px;    /* จำกัดความกว้างกลุ่มปุ่ม */
-    margin: 20px auto;   /* จัดให้อยู่กลางป๊อปอัพ */
+    max-width: 250px;
+    /* จำกัดความกว้างกลุ่มปุ่ม */
+    margin: 20px auto;
+    /* จัดให้อยู่กลางป๊อปอัพ */
 }
 
 /* สไตล์ปุ่ม Social ภายในป๊อปอัพ */
@@ -738,4 +1836,1418 @@ body {
 
 .popup-social-btn:last-child {
     margin-bottom: 0;
+}
+
+/*อยากทำก็ทำ*/
+
+/* สถานะปกติของแถบเมนู */
+/* คลาสสำหรับสั่งซ่อน - ต้องใส่ !important ทุกบรรทัด */
+.nav-hidden {
+    transform: translateY(100%) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+    /* บังคับหายไปจากหน้าจอเลย */
+}
+
+.admin-bottom-nav {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    /* ขยายให้กว้างขึ้นอีกนิด */
+    max-width: 500px;
+    /* เพิ่มขนาดความกว้างสูงสุด */
+    background: rgba(255, 255, 255, 0.4);
+    /* ให้ใสขึ้นเพื่อให้เห็นเงาข้างหลัง */
+    backdrop-filter: blur(25px) saturate(160%);
+    -webkit-backdrop-filter: blur(25px) saturate(160%);
+    display: flex;
+    padding: 11px 11px;
+    /* เพิ่ม Padding ให้ตัวแท็บดูใหญ่และสูงขึ้น */
+    border-radius: 40px;
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.15),
+        /* เงาหลักให้ดูลอย */
+        0 10px 20px rgba(233, 30, 99, 0.1),
+        /* เงาออร่าสีชมพูจางๆ */
+        inset 0 2px 10px rgba(255, 255, 255, 0.6),
+        /* แสงตกกระทบที่ขอบบนเหมือนหยดน้ำ */
+        inset 0 -2px 5px rgba(0, 0, 0, 0.05);
+    /* เงาที่ขอบล่างให้ดูหนา */
+
+    /* 🚩 ขอบแบบหยดน้ำ (Liquid Border) */
+    border: 1.5px solid rgba(255, 255, 255, 0.7);
+    z-index: 1000;
+}
+
+/* ตัวสไลด์หยดน้ำ (ปรับให้ดูนูนและใหญ่ตามแท็บ) */
+.nav-indicator {
+    position: absolute;
+    height: 85%;
+    /* ให้ความสูงเกือบเต็มแท็บ */
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(145deg, rgba(255, 192, 203, 0.5), rgba(255, 105, 180, 0.3));
+    border-radius: 35px;
+    z-index: 0;
+    transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    width: 32%;
+    left: 10px;
+
+    /* เงาหยดน้ำ 3D แบบจัดเต็ม */
+    box-shadow:
+        /* 1. เงานอก: ทำให้หยดน้ำดูลอยขึ้นจากพื้นผิว */
+        0 8px 15px rgba(0, 0, 0, 0.1),
+
+        /* 2. เงาใน (ขาว): ใส่ inset ไว้มุมซ้ายบนเพื่อให้ดูเหมือนแสงตกกระทบขอบน้ำ */
+        inset 4px 4px 10px rgba(255, 255, 255, 0.8),
+
+        /* 3. เงาใน (เข้ม): ใส่ inset ไว้มุมขวาล่างเพื่อให้ดูมีก้นหยดน้ำ */
+        inset -4px -4px 12px rgba(233, 30, 99, 0.2);
+    border: 1.5px solid rgba(255, 255, 255, 0.8);
+}
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #a0aec0;
+    z-index: 1;
+    transition: all 0.4s ease;
+    height: 50px;
+    /* กำหนดความสูงคงที่ให้ดูใหญ่สม่ำเสมอ */
+}
+
+/* ปรับขนาดไอคอนให้เล็กลงแบบ Minimal */
+.nav-item i {
+    font-size: 20px;
+    /* ปรับลดลงจากเดิม (24px -> 18px) */
+    margin-bottom: 5px;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* เมื่อเลือก: ไอคอนจะขยายขึ้นแค่นิดเดียวให้ดูหรู */
+.nav-item.active i {
+    color: #e91e63;
+    transform: translateY(-5px) scale(1.1);
+    /* ลดการขยายลงให้ดูไม่กระโตกกระตาก */
+    filter: drop-shadow(0 5px 8px rgba(233, 30, 99, 0.3));
+}
+
+.nav-item span {
+    font-size: 10px;
+    /* ตัวอักษรเล็กจิ๋วดูทันสมัย */
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    opacity: 0.6;
+    transition: 0.3s;
+}
+
+.nav-item.active span {
+    opacity: 1;
+    color: #d81b60;
+    transform: translateY(-1px);
+}
+
+/* แสง Aura หลังไอคอน (ปรับขนาดให้รับกับไอคอนที่เล็กลง) */
+.nav-item.active::after {
+    content: '';
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    background: radial-gradient(circle, rgba(233, 30, 99, 0.3) 0%, transparent 75%);
+    filter: blur(8px);
+    border-radius: 50%;
+    top: 5%;
+    z-index: -1;
+    animation: floatingWater 3s infinite alternate ease-in-out;
+}
+
+@keyframes floatingWater {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.3;
+    }
+
+    100% {
+        transform: scale(1.1);
+        opacity: 0.5;
+    }
+}
+
+/* =============================================== */
+/* Keyframes */
+/* =============================================== */
+
+
+
+/* กันไม่ให้เนื้อหาแชทโดนแถบ Nav ทับ */
+#chatBox,
+.chat-list-panel {
+    padding-bottom: 20px !important;
+    /* ปรับลดลง เพราะเราใช้ระบบ Full Screen แล้ว */
+}
+
+.header-padding {
+    height: 60px;
+}
+
+/* เว้นระยะจาก Header บน (ถ้ามี) */
+
+.content-box {
+    padding: 20px;
+    text-align: center;
+}
+
+.social-link {
+    display: block;
+    padding: 15px;
+    margin: 10px 0;
+    background: white;
+    border-radius: 10px;
+    color: var(--primary-color);
+    text-decoration: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* เพิ่มในไฟล์ CSS */
+.app-screen {
+    position: absolute;
+    /* เปลี่ยนจาก fixed เป็น absolute เพื่อให้อยู่ในกรอบ Container */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* ล็อคความสูงให้พอดีกับที่ว่างเหนือเมนู */
+    background-color: white;
+    z-index: 10;
+    overflow-y: auto;
+    display: none;
+
+    animation-duration: 0.4s;
+    animation-fill-mode: forwards;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+    padding-bottom: 20px;
+}
+
+/* แก้ชื่อให้ไม่ซ้ำกัน */
+@keyframes messagePopIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    /* แบ่งเป็น 2 คอลัมน์ */
+    gap: 20px;
+    padding: 20px;
+}
+
+.admin-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.admin-card:active {
+    transform: scale(0.95);
+    /* เอฟเฟกต์ยุบตัวเมื่อกด */
+}
+
+.admin-img-wrapper {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+}
+
+.admin-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.admin-card span {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+/* ส่วนแสดงข้อมูลรายละเอียด */
+.admin-detail-container {
+    margin-top: 20px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* --- 1. Animation Definitions --- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* Keyframe สำหรับแสงวิ่ง */
+@keyframes glassShine {
+    0% {
+        left: -150%;
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        left: 150%;
+        opacity: 0;
+    }
+}
+
+.admin-list {
+    display: flex;
+    flex-direction: column;
+    /* เรียงลงมาเป็นแนวตั้ง */
+    gap: 12px;
+    /* ระยะห่างระหว่างปุ่ม */
+    padding: 15px;
+}
+
+.admin-list-item {
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    /* เริ่มต้นซ่อนไว้เพื่อทำ Stagger */
+    animation: fadeInUp 0.6s ease forwards;
+    overflow: hidden;
+    /* 🔑 เพิ่ม 3 บรรทัดนี้ */
+    position: relative;
+    z-index: 1;
+    cursor: pointer;
+
+    border-left: 5px solid var(--primary-color);
+
+    box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.02),
+        0 10px 20px rgba(0, 0, 0, 0.05);
+
+
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 15px;
+    margin-bottom: 2px;
+    display: flex;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.admin-list-item:active {
+    transform: scale(0.98);
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 2px 10px rgba(233, 30, 99, 0.2);
+}
+
+.admin-list-item i.fa-chevron-right {
+    font-size: 14px;
+    margin-left: auto;
+    transition: transform 0.3s ease;
+}
+
+.admin-list-item:hover i.fa-chevron-right {
+    transform: translateX(5px);
+    color: #888;
+}
+
+.admin-avatar {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    margin-right: 18px;
+    position: relative;
+    flex-shrink: 0;
+    border: 3px solid #fff;
+    overflow: hidden;
+
+    /* เพิ่มเงาให้ตัววงกลมรูปภาพ */
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.15),
+        inset 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.admin-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    /* ปรับความคมชัดและแสงของรูปผ่าน CSS นิดหน่อย */
+    filter: brightness(1.02) contrast(1.02);
+}
+
+.admin-info-text {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    /* ให้ข้อความกินพื้นที่ที่เหลือ */
+}
+
+.admin-name {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text-color);
+    display: block;
+}
+
+.admin-role {
+    font-size: 13px;
+    color: #777;
+    margin-top: 2px;
+    font-weight: 500;
+}
+
+.admin-list-item i {
+    color: #ccc;
+    font-size: 14px;
+}
+
+/* 1. ปรับพื้นหลังให้สมูทขึ้น */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    /* เพิ่มความเบลอให้ดูหรู */
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    /* จางเข้าแบบนุ่มๆ */
+}
+
+/* 2. ตัวป๊อปอัพ (เน้นเงาและอนิเมชั่น) */
+.modal-content {
+    background: #ffffff;
+    width: 85%;
+    max-width: 350px;
+    border-radius: 30px;
+    padding: 30px;
+    position: relative;
+    text-align: center;
+    border: none !important;
+
+    /* การตั้งค่าเงาแบบหลายชั้น + เส้นขอบแสงจางๆ (Rim Light) */
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.5) inset,
+        /* แสงขอบด้านใน */
+        0 10px 20px rgba(0, 0, 0, 0.1),
+        0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+    /* อนิเมชั่นเริ่มต้น: เตรียมความเด้ง */
+    opacity: 0;
+    transform: scale(0.85) translateY(30px);
+
+    /* รวม Transition เป็นอันเดียวเพื่อความลื่นไหล */
+    transition:
+        transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 0.4s ease,
+        box-shadow 0.3s ease;
+}
+
+/* 3. เมื่อ Active ให้เด้งขึ้นมา */
+.modal-overlay.active {
+    display: flex;
+    opacity: 1;
+    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #999;
+    cursor: pointer;
+}
+
+/* 4. เพิ่มเงาให้รูปภาพแอดมินดูมีมิติ */
+.modal-avatar-wrapper {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    margin: -10px auto 20px;
+    /* ขยับขึ้นไปข้างบนนิดนึงให้ดูเด่น */
+    position: relative;
+    overflow: visible;
+    /* ยอมให้เงาฟุ้งออกนอกขอบได้ */
+}
+
+.modal-avatar-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 5px solid #ffffff;
+    /* ขอบขาวหนาหน่อยเพิ่มความแพง */
+    /* เงาตกกระทบแบบนุ่มนวลหลายชั้น */
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.2),
+        /* เงาฟุ้งด้านล่าง */
+        0 5px 15px rgba(0, 0, 0, 0.1);
+    /* เงาเข้มใกล้ตัวรูป */
+
+    transform: scale(0.5) rotate(-10deg);
+    transition: all 0.6s 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-overlay.active .modal-avatar-wrapper img {
+    transform: scale(1) rotate(0deg);
+}
+
+/* เพิ่มแสงสะท้อนบนรูป (Gradient Overlay) */
+.modal-avatar-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    /* แสงเงาจางๆ ด้านบนของรูปภาพ */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 50%);
+    pointer-events: none;
+}
+
+.modal-role-badge {
+    color: var(--primary-color);
+    font-weight: 500;
+    margin-top: 5px;
+}
+
+.modal-footer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.modal-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 18px;
+    font-weight: 700;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.5px;
+    flex: 1;
+    text-decoration: none;
+}
+
+.modal-overlay.active .fb-style {
+    transition-delay: 0.4s;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.modal-overlay.active .ig-style {
+    transition-delay: 0.5s;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.modal-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: none;
+}
+
+.modal-btn:hover::after {
+    animation: glassShine 0.8s ease-in-out;
+}
+
+/* ใส่ Delay ให้แต่ละไอเทมค่อยๆ โผล่ตามกันมา (Stagger) */
+.admin-list-item:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.admin-list-item:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.admin-list-item:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.admin-list-item:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.fb-style {
+    background: linear-gradient(145deg, #1877f2, #1159b7);
+    color: white;
+    /* เงา 2 ชั้น: ชั้นนอกฟุ้งๆ และชั้นในที่ดูเหมือนขอบสะท้อนแสง */
+    box-shadow:
+        0 8px 15px rgba(24, 119, 242, 0.3),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    transform: scale(0.95);
+}
+
+.ig-style {
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #bc1888);
+    color: white;
+    box-shadow:
+        0 8px 15px rgba(220, 39, 67, 0.3),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    transform: scale(0.95);
+    filter: brightness(0.9);
+}
+
+.modal-btn:active {
+    transform: translateY(2px);
+    filter: brightness(1.1);
+}
+
+.modal-btn.call {
+    background: linear-gradient(135deg, #a51c30, #d32f2f);
+    /* ไล่เฉดสีให้ดูแพง */
+    color: white;
+    box-shadow: 0 4px 15px rgba(165, 28, 48, 0.3);
+}
+
+.modal-btn.chat {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.admin-list-item:active .admin-avatar img {
+    transform: scale(0.9);
+    /* ตอนกดรูปจะยุบลงเล็กน้อย */
+    transition: transform 0.2s ease;
+}
+
+.modal-overlay.active .modal-content #modal-img {
+    /* อนิเมชั่นตอนป๊อปอัพเด้งขึ้นมา รูปจะขยายตามเล็กน้อย */
+    animation: imagePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes imagePop {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+
+.admin-header-logo {
+    display: flex;
+    justify-content: center;
+    /* จัดรูปให้อยู่กึ่งกลางแนวนอน */
+    align-items: center;
+    padding: 0px 0;
+    margin-bottom: 10px;
+}
+
+.header-img {
+    height: 111px;
+    /* ปรับความสูงตามความเหมาะสมของโลโก้คุณ */
+    width: auto;
+    /* ให้กว้างปรับตามสัดส่วนอัตโนมัติ */
+    object-fit: contain;
+
+    /* 🎨 เพิ่มมิติให้รูปโลโก้ข้างบน */
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+
+    /* เพิ่มอนิเมชั่นให้ค่อยๆ โผล่มาตอนเข้าหน้าแอดมิน */
+    animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* เมื่อเอาเมาส์วางหรือนิ้วสัมผัส */
+.admin-list-item:active {
+    transform: translateY(-2px);
+    /* ลอยขึ้นนิดหน่อย */
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+    /* เงาเข้มขึ้น */
+    background: #fff;
+}
+
+.modal-content {
+    background: #ffffff;
+    border-radius: 35px;
+    padding: 30px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15),
+        inset 0 2px 1px rgba(255, 255, 255, 1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+
+    width: 85%;
+    max-width: 360px;
+    position: relative;
+    /* เริ่มต้น: เล็กและอยู่ข้างล่าง */
+    transform: translateY(50px) scale(0.85);
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* --- อนิเมชั่นตอนเปลี่ยนหน้า --- */
+@keyframes pageIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.app-screen.active-page {
+    display: block;
+
+    z-index: 10;
+    animation-name: slideInRight;
+    /* สไลด์เข้ามาจากขวา */
+    /* แสดงผลเฉพาะหน้าที่มีคลาสนี้ */
+    animation: pageIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ใส่ Delay ให้รูปแอดมินค่อยๆ ขึ้นมาทีละคน */
+.active-page .admin-list-item {
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+}
+
+.active-page .admin-list-item:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.active-page .admin-list-item:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.active-page .admin-list-item:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.active-page .admin-list-item:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+/* คลาสสำหรับสั่งหายตัวแบบเด็ดขาด */
+.nav-is-hidden {
+    display: none !important;
+}
+
+/* คลาสนี้จะบังคับซ่อนทุกอย่างที่ขวางหน้า */
+.nav-force-hide {
+    transform: translateY(100%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* คลาสสำหรับบังคับให้เมนูกลับมาโชว์ */
+.nav-show-fixed {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    /* เผื่อมี Animation ดันลงไป */
+}
+
+/* คลาสสำหรับดึงแท็บกลับมาแบบเด็ดขาด */
+.force-show-nav {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 9999 !important;
+    /* บังคับให้อยู่บนสุด */
+    transform: none !important;
+    /* ล้างค่าการเลื่อนขึ้น/ลง */
+}
+
+/* ใช้ ID เพื่อเพิ่มพลังความสำคัญสูงสุด */
+#mainContainer .admin-bottom-nav.show-now {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    z-index: 99999 !important;
+}
+
+.show-now {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    display: flex !important;
+}
+
+
+/*ช่องทางติดต่อ
+/* การจัดวางหน้า Contact */
+#screen-social {
+    background-color: #f8f9fa;
+    /* สีพื้นหลังอ่อนๆ ให้ตัวการ์ดดูเด่น */
+}
+
+.contact-header-area {
+    padding: 30px 20px 10px;
+    text-align: center;
+}
+
+.contact-sub-title {
+    font-size: 14px;
+    color: #777;
+    font-weight: 400;
+}
+
+.contact-container {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* การ์ดหมวดหมู่ */
+.contact-category-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 25px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: transform 0.3s ease;
+}
+
+/* หัวข้อการ์ด (Facebook / Instagram) */
+.category-header {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    color: white;
+    font-size: 18px;
+}
+
+.fb-bg {
+    background: linear-gradient(90deg, #1877F2, #0056b3);
+}
+
+.ig-bg {
+    background: linear-gradient(90deg, #f09433, #e6683c, #dc2743, #bc1888);
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#screen-social.active {
+    display: block !important;
+    animation: slideUpFade 0.5s ease forwards;
+}
+
+/* 1. กำหนดอนิเมชั่นลอยขึ้นและขยาย */
+@keyframes titleEntrance {
+    0% {
+        opacity: 0;
+        transform: translateY(15px) scale(0.95);
+        filter: blur(5px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+/* 2. ปรับแต่งหัวข้อหลัก (Social Media) */
+.contact-main-title {
+    font-size: 32px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #333 0%, #e91e63 50%, #ff5c8d 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 5px;
+
+    background-size: 200% auto;
+    animation: titleEntrance 0.8s ease forwards, shineText 3s linear infinite;
+
+    /* เพิ่มเงาจางๆ ให้ตัวอักษรดูนูนออกมา */
+    filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.1));
+}
+
+@keyframes shineText {
+    to {
+        background-position: 200% center;
+    }
+}
+
+/* 3. ปรับแต่งข้อความซับไตเติ้ล */
+.contact-sub-title {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+
+    /* ให้ออกมาหลังหัวข้อหลักนิดนึง (Delay) */
+    opacity: 0;
+    animation: titleEntrance 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-delay: 0.2s;
+}
+
+/* 4. เพิ่มเส้นใต้เก๋ๆ ที่ค่อยๆ ขยายตัวออก */
+.contact-header-area::after {
+    content: "";
+    display: block;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #e91e63, transparent);
+    margin: 15px auto 0;
+    border-radius: 10px;
+    animation: expandLine 1s ease-out forwards;
+    animation-delay: 0.5s;
+}
+
+@keyframes expandLine {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 60px;
+    }
+}
+
+/* ปุ่มลิงก์ภายในหมวด */
+.category-body {
+    padding: 10px;
+    overflow-x: hidden;
+    height: 100%;
+}
+
+.category-header i {
+    font-size: 24px;
+}
+
+.contact-link-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    margin-bottom: 8px;
+    background: #fff;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.2s ease;
+    border: 1px solid #f0f0f0;
+}
+
+.btn-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.btn-info strong {
+    font-size: 14px;
+    color: #222;
+    line-height: 1.2;
+}
+
+.btn-info span {
+    font-size: 11px;
+    color: #888;
+}
+
+.contact-link-btn i.fa-chevron-right {
+    font-size: 12px;
+    color: #ccc;
+}
+
+.contact-link-btn i {
+    color: #ccc;
+    font-size: 14px;
+}
+
+.contact-link-btn:active {
+    background: #ffffff;
+    transform: scale(0.96);
+    border-color: rgba(233, 30, 99, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.contact-link-btn:active i {
+    color: var(--primary-color);
+}
+
+/* =============================================== */
+/* 1. อนิเมชั่นหลักสำหรับหน้า Contact */
+/* =============================================== */
+
+/* กำหนดให้คอนเทนเนอร์ค่อยๆ จางและเลื่อนขึ้น */
+#screen-social .contact-container {
+    animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* 2. การ์ดหมวดหมู่ (เงานุ่มนวลและการขยับ) */
+.contact-category-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 25px;
+
+    /* เงาหลายชั้นให้ดูนุ่ม (Soft Ambient Shadow) */
+    box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.02),
+        0 10px 20px rgba(0, 0, 0, 0.05),
+        0 20px 40px rgba(0, 0, 0, 0.03);
+
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    opacity: 0;
+    /* เริ่มต้นซ่อนเพื่อทำ Stagger */
+    transform: translateY(20px);
+    animation: titleEntrance 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: cardEntrance 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.contact-category-card:nth-child(1) {
+    animation-delay: 0.4s;
+}
+
+.contact-category-card:nth-child(2) {
+    animation-delay: 0.6s;
+}
+
+/* 3. เอฟเฟกต์ปุ่ม (เงานูนเมื่อสัมผัส) */
+.contact-link-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    margin-bottom: 10px;
+    background: #ffffff;
+    border-radius: 14px;
+    text-decoration: none;
+    color: #333;
+    border: 1px solid #f0f0f0;
+
+    /* เงาเบาๆ ของปุ่ม */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* เมื่อเอาเมาส์วางหรือนิ้วแตะ */
+.contact-link-btn:hover,
+.contact-link-btn:active {
+    background: #fff;
+    transform: translateY(-3px) scale(1.02);
+    border-color: var(--primary-color);
+
+    /* เงาเข้มขึ้นเมื่อลอยขึ้น */
+    box-shadow:
+        0 10px 20px rgba(0, 0, 0, 0.08),
+        0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* 4. ส่วนหัวของหมวด (เพิ่มแสงเงาสะท้อน) */
+.category-header {
+    position: relative;
+    overflow: hidden;
+}
+
+.category-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shineEffect 3s infinite;
+}
+
+/* =============================================== */
+/* Keyframes */
+/* =============================================== */
+
+@keyframes cardEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes shineEffect {
+    0% {
+        left: -100%;
+    }
+
+    20% {
+        left: 100%;
+    }
+
+    100% {
+        left: 100%;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.admin-list-item::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 60%;
+    /* ขยายให้กว้างขึ้นเล็กน้อยเพื่อให้แสงดูละมุน */
+    height: 100%;
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0) 100%);
+    transform: skewX(-25deg);
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    /* ซ่อนไว้ก่อน */
+}
+
+.admin-list-item:active::after {
+    opacity: 1;
+    /* แสดงผลเฉพาะตอนกด */
+    animation: glassShine 0.8s ease-out;
+}
+
+/* ถ้าต้องการให้วิ่งตอนเปิดหน้าแอดมินครั้งเดียว ให้ใช้คลาสนี้ร่วมกับ JS */
+.active-page .admin-list-item::after {
+    opacity: 1;
+    animation: glassShine 1.2s ease-in-out forwards;
+    animation-delay: 0.5s;
+    /* รอให้หน้าสไลด์เข้ามาเสร็จก่อนค่อยวิ่ง */
+}
+
+#contextMenu {
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#contextMenu div:hover {
+    background-color: #f5f5f5;
+}
+
+/* ป้องกันการคลุมดำขณะกดค้างในมือถือ */
+.message-bubble {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.message-container.user-container {
+    justify-content: flex-end;
+    /* ให้ข้อความผู้ใช้ชิดขวา */
+    padding-right: 10px;
+    /* เว้นระยะจากขอบจอเล็กน้อย */
+}
+
+/* ค้นหาส่วน admin-container ใน CSS แล้วปรับตามนี้ */
+.message-container.admin-container {
+    align-self: flex-start;
+    align-items: flex-start;
+    margin-left: 10px;
+    /* 🚩 เพิ่มระยะห่างจากขอบจอซ้าย */
+    margin-right: 40px;
+    /* เว้นพื้นที่ด้านขวาไว้ ไม่ให้ข้อความยาวจนเต็มจอ */
+    max-width: 85%;
+    /* จำกัดความกว้างไม่ให้บังกัน */
+}
+
+.deleted-bubble {
+    border: 1px solid #ddd !important;
+    color: #999 !important;
+    box-shadow: none !important;
+    margin-right: 10px;
+    /* กันไม่ให้ชิดขอบเกินไป */
+    pointer-events: none;
+    /* 🚩 วิธีที่ง่ายที่สุด: ทำให้ element นี้ไม่รับ event ใดๆ เลย */
+    user-select: none;
+    /* ห้ามคลุมดำหรือคัดลอกข้อความ */
+    cursor: default;
+    /* เปลี่ยนลูกศรเมาส์เป็นแบบปกติ ไม่ใช่รูปมือ */
+
+    background: rgba(200, 200, 200, 0.2) !important;
+    backdrop-filter: blur(5px);
+    /* เอฟเฟกต์กระจกฝ้า */
+    transform: scale(0.95);
+    /* ทำให้ดูยุบลงไป */
+}
+
+/* อนิเมชั่นตอนข้อความโผล่มา */
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.new-message {
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#contextMenu ul {
+    list-style: none;
+    margin: 0;
+    padding: 5px 0;
+}
+
+#contextMenu li {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#contextMenu li:hover {
+    background-color: #f5f5f5;
+}
+
+.send-btn-modern {
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.send-btn-modern:active {
+    transform: scale(0.85) rotate(10deg);
+}
+
+/* อนิเมชั่นตอนข้อความใหม่เด้งขึ้นมา */
+@keyframes bubblePop {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    80% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.message-container.new-message {
+    animation: bubblePop 0.3s forwards;
+}
+
+/* ตรวจสอบว่ามี CSS ชุดนี้ครบไหม */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    /* พื้นหลังดำจาง */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999;
+    /* มั่นใจว่าอยู่หน้าสุด */
+    pointer-events: auto;
+    /* ให้กดปุ่มได้ */
+}
+
+.popup-content {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 85%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.intro-btn {
+    background: #e91e63;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+/* ล็อกการคัดลอกและเมนูระบบทั้งหมด */
+* {
+    -webkit-touch-callout: none;
+    /* ปิดเมนูแช่ของ iOS ในทุกส่วน */
+    -webkit-user-select: none;
+    /* ปิดการเลือกข้อความ iOS Safari */
+    -khtml-user-select: none;
+    /* Konqueror HTML */
+    -moz-user-select: none;
+    /* Firefox */
+    -ms-user-select: none;
+    /* Internet Explorer/Edge */
+    user-select: none;
+    /* Non-prefixed version, currently supported by Chrome and Opera */
+
+    /* ป้องกันการไฮไลท์สีฟ้าตอนกดปุ่มบนมือถือ (Tap Highlight) */
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* หากมีส่วนไหนที่ยังอยากให้คัดลอกได้ (เช่น เลขบัญชี หรือ รหัสอ้างอิง) ให้ใช้คลาสนี้ */
+.allow-select {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+}
+
+/* กล่องข้อความแอดมิน */
+.admin-message {
+    display: flex;
+    justify-content: flex-start;
+    margin: 10px 0;
+    width: 100%;
+}
+
+.admin-message .message-content {
+    background: white;
+    color: #333;
+    padding: 12px 18px;
+    border-radius: 25px 25px 25px 5px;
+    /* มนๆ แบบแชทสมัยใหม่ */
+    max-width: 80%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(233, 30, 99, 0.1);
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* อนิเมชั่นที่ทำให้คนดู "อึ้ง" */
+.animate-pop {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+    animation: messageEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes messageEntrance {
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
