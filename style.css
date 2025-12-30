@@ -2389,6 +2389,8 @@ body.is-chatting .admin-bottom-nav {
     letter-spacing: 0.5px;
     flex: 1;
     text-decoration: none;
+    overflow: hidden;
+    /* สำคัญมาก: เพื่อไม่ให้แสงสะท้อนล้นออกจากขอบปุ่ม */
 }
 
 .modal-overlay.active .fb-style {
@@ -2407,15 +2409,23 @@ body.is-chatting .admin-bottom-nav {
     content: '';
     position: absolute;
     top: 0;
-    left: -100%;
-    width: 50%;
+    left: -150%;
+    width: 60%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    transition: none;
+    background: linear-gradient(to right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(212, 175, 55, 0.4) 50%,
+            /* ใช้สีทองจางๆ แทนสีขาวเพื่อให้เข้าธีม */
+            rgba(255, 255, 255, 0) 100%);
+    transform: skewX(-25deg);
+
+    /* 🔑 ใส่แอนิเมชันตรงนี้เลยเพื่อให้วิ่งเอง */
+    /* วิ่งวนไปเรื่อยๆ (infinite) ใช้เวลา 3 วินาที */
+    animation: glassShine 3s infinite;
 }
 
 .modal-btn:hover::after {
-    animation: glassShine 0.8s ease-in-out;
+    animation-duration: 1s; /* พอวางเมาส์แล้วแสงจะวิ่งไวขึ้น */
 }
 
 /* ใส่ Delay ให้แต่ละไอเทมค่อยๆ โผล่ตามกันมา (Stagger) */
@@ -2494,6 +2504,7 @@ body.is-chatting .admin-bottom-nav {
         opacity: 1;
     }
 }
+
 
 
 .admin-header-logo {
