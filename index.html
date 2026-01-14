@@ -88,11 +88,12 @@
                 style="display:none; flex-direction: column; flex-grow: 1;">
 
                 <div id="chatHeader">
-                    <button id="homeButton" onclick="showStartScreen()">
-                        <i class="fas fa-home"></i> หน้าแรก
-                    </button>
-                    <span id="chatTitle">ห้องสนทนาใหม่</span>
-                    <div style="width: 70px;">&nbsp;</div>
+                    <button id="homeButton" onclick="showStartScreen()"><i
+                            class="fas fa-home"></i>หน้าแรก</button>
+                    <span id="chatTitle">ห้องสนทนาส่วนตัว</span>
+                    <div style="width: 50px;">&nbsp;</div>
+                    <button class="header-help-btn"
+                        onclick="toggleHelpPopup(true)">?</button>
                 </div>
 
                 <div id="chatBox">
@@ -365,6 +366,121 @@
                     </div>
                 </div>
 
+                <div id="customHelpOverlay" onclick="toggleHelpPopup(false)"
+                    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;">
+                    <div class="custom-help-content"
+                        onclick="event.stopPropagation()"
+                        style="background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 350px;">
+
+                        <div id="help-main-menu">
+                            <h3
+                                style="margin-top: 0; color: #8b0000; text-align: center;">
+                                <i class="fas fa-question-circle"></i>
+                                เลือกหัวข้อที่ต้องการ
+                            </h3>
+                            <hr
+                                style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+                            <div class="help-menu-list">
+                                <button class="help-item-btn"
+                                    onclick="showHelpDetail('install')">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <span>วิธีเพิ่มเว็บลงหน้าจอหลัก</span>
+                                </button>
+                                <button class="help-item-btn"
+                                    onclick="showHelpDetail('warn')">
+                                    <i class="fas fa-bell"></i>
+                                    <span>วิธีเปิดใช้งานการแจ้งเตือน</span>
+                                </button>
+                                <button class="help-item-btn"
+                                    onclick="showHelpDetail('delete')">
+                                    <i class="fas fa-eraser"></i>
+                                    <span>วิธียกเลิกข้อความ</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="help-detail-install" class="help-detail-page"
+                            style="display: none; text-align: left;">
+                            <h3 style="color: #8b0000; text-align: center;"><i
+                                    class="fas fa-mobile-alt"></i>
+                                เพิ่มลงหน้าจอหลัก</h3>
+                            <div
+                                style="font-size: 14px; color: #555; line-height: 1.6;">
+
+                                <div
+                                    style="background: #f0f0f0; padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid #000;">
+                                    <p
+                                        style="margin: 0; font-weight: bold; color: #000;">
+                                        <i class="fab fa-apple"
+                                            style="font-size: 18px;"></i> สำหรับ iOS
+                                        (Safari)
+                                    </p>
+                                    <p style="margin: 5px 0 0 0;">กดปุ่ม <i
+                                            class="fas fa-share-square"></i> (แชร์)
+                                         แล้วเลือก
+                                        <b>"เพิ่มลงหน้าจอโฮม"</b></p>
+                                </div>
+
+                                <div
+                                    style="background: #f0fff0; padding: 12px; border-radius: 10px; border-left: 5px solid #3ddc84;">
+                                    <p
+                                        style="margin: 0; font-weight: bold; color: #3ddc84;">
+                                        <i class="fab fa-android"
+                                            style="font-size: 18px;"></i> สำหรับ
+                                        Android (Chrome)
+                                    </p>
+                                    <p style="margin: 5px 0 0 0;">กดปุ่ม <i
+                                            class="fas fa-ellipsis-v"></i> (3
+                                        จุด) แล้วเลือก <b>"ติดตั้งแอป"</b>
+                                        หรือ <b>"เพิ่มลงหน้าจอหลัก"</b></p>
+                                </div>
+
+                            </div>
+                            <button class="back-btn"
+                                onclick="showHelpDetail('main')"
+                                style="margin-top: 15px;">ย้อนกลับ</button>
+                        </div>
+
+                        <div id="help-detail-warn" class="help-detail-page"
+                            style="display: none; text-align: left;">
+                            <h3 style="color: #8b0000;"><i class="fas fa-bell"></i>
+                                การแจ้งเตือน</h3>
+                            <div
+                                style="font-size: 14px; color: #555; line-height: 1.5;">
+                                <p>1. เมื่อเข้าหน้าเว็บครั้งแรก ให้กด <b>"อนุญาต"
+                                        (Allow)</b></p>
+                                <p>2. หากไม่มีปุ่มขึ้น
+                                    ให้กดเพิ่มเว็บลงในหน้าจอหลักก่อน</p>
+                                <p>3. เข้าใช้งานผ่านไอคอนบนหน้าจอหลัก
+                                    ระบบจะเปิดการแจ้งเตือนให้อัตโนมัติ</p>
+                                ❗หากไม่เพิ่มลงในหน้าจอหลักจะไม่สามารถใช้งานการแจ้งเตือนได้❗
+                            </div>
+                            <button class="back-btn"
+                                onclick="showHelpDetail('main')">ย้อนกลับ</button>
+                        </div>
+
+                        <div id="help-detail-delete" class="help-detail-page"
+                            style="display: none; text-align: left;">
+                            <h3 style="color: #8b0000;"><i
+                                    class="fas fa-eraser"></i> ยกเลิกข้อความ</h3>
+                            <p
+                                style="font-size: 14px; color: #555; line-height: 1.5;">
+                                หากพิมพ์ผิดหรือต้องการลบ ให้ <b>กดค้าง</b>
+                                ที่ข้อความ แล้วเลือกเมนู <b>"ยกเลิกการส่ง"</b>
+                                เพื่อยกเลิกข้อความ
+                            </p>
+                            <button class="back-btn"
+                                onclick="showHelpDetail('main')">ย้อนกลับ</button>
+                        </div>
+
+                        <button class="close-help-btn"
+                            onclick="toggleHelpPopup(false)"
+                            style="margin-top: 20px; width: 100%; padding: 12px; background: #eee; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; color: #666;">
+                            ปิดหน้าต่าง
+                        </button>
+                    </div>
+                </div>
+
                 <nav class="admin-bottom-nav">
                     <div id="navIndicator" class="nav-indicator"></div>
 
@@ -396,5 +512,6 @@
                 <script src="user.js"></script>
 
             </body>
+
 
         </html>
