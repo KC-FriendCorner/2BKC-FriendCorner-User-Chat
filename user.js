@@ -132,46 +132,62 @@ if (copyOption) {
 
 function setupContextMenu(bubbleEl, chatId, messageId) {
     const isUserMessage = firebase.auth().currentUser && firebase.auth().currentUser.uid === chatId;
+    if (!isUserMessage) return;
 
-    // Desktop (คลิกขวา)
+    let touchTimeout;
+    let isMenuOpened = false; // ตัวแปรเช็คสถานะป้องกันการเปิดซ้ำ
+
+    // ฟังก์ชันกลางสำหรับแสดงเมนู
+    const openMenu = (x, y) => {
+        activeMessageIdForContextMenu = messageId;
+        activeChatIdForContextMenu = chatId;
+
+        contextMenu.style.display = 'block';
+        contextMenu.style.left = x + 'px';
+        contextMenu.style.top = y + 'px';
+        deleteOption.style.display = 'block';
+
+        if (navigator.vibrate) navigator.vibrate(20);
+        isMenuOpened = true; 
+    };
+
+    // 1. สำหรับ Desktop & มือถือบางรุ่น (Standard Context Menu)
     bubbleEl.addEventListener('contextmenu', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (!isUserMessage) return;
-
-        activeMessageIdForContextMenu = messageId;
-        activeChatIdForContextMenu = chatId;
+        e.stopImmediatePropagation(); // หยุดไม่ให้ Event อื่นทำงานต่อ
         
-        contextMenu.style.display = 'block';
-        contextMenu.style.left = e.clientX + 'px';
-        contextMenu.style.top = e.clientY + 'px';
-        deleteOption.style.display = 'block';
+        // ถ้าเมนูถูกเปิดไปแล้วจาก touch ไม่ต้องทำซ้ำ
+        if (isMenuOpened) {
+            isMenuOpened = false; // reset ค่า
+            return;
+        }
+
+        openMenu(e.clientX, e.clientY);
     });
 
-    // Mobile (กดค้าง) - แก้ไขจุดนี้ให้ไม่เด้งซ้ำ
-    let touchTimeout;
+    // 2. สำหรับ Mobile (Custom Long Press)
     bubbleEl.addEventListener('touchstart', function (e) {
+        isMenuOpened = false; // reset ทุกครั้งที่เริ่มแตะ
+        
         touchTimeout = setTimeout(() => {
-            if (!isUserMessage) return;
-            
-            // ✅ ป้องกันเมนูของระบบมือถือ (Copy/Paste) ขึ้นมาแทรก
-            if (e.cancelable) e.preventDefault(); 
+            if (e.cancelable) e.preventDefault();
+            e.stopPropagation();
 
             const touch = e.touches[0];
-            activeMessageIdForContextMenu = messageId;
-            activeChatIdForContextMenu = chatId;
+            openMenu(touch.clientX, touch.clientY);
+        }, 600); // ลดเวลาลงนิดนึงเพื่อให้รู้สึกตอบสนองเร็วขึ้น
+    }, { passive: false });
 
-            contextMenu.style.display = 'block';
-            contextMenu.style.left = touch.clientX + 'px';
-            contextMenu.style.top = touch.clientY + 'px';
-            deleteOption.style.display = 'block';
-            
-            // สั่นนิดๆ ให้รู้ว่ากดติด (ถ้ามือถือรองรับ)
-            if (navigator.vibrate) navigator.vibrate(20);
-        }, 700); 
-    }, { passive: false }); // ✅ ต้องเป็น false เพื่อให้ใช้ preventDefault ได้
+    // ยกเลิก timeout ถ้ามีการขยับหรือปล่อยนิ้วก่อนเวลา
+    bubbleEl.addEventListener('touchend', function(e) {
+        clearTimeout(touchTimeout);
+        // ถ้าเมนูเปิดแล้ว ให้ป้องกันไม่ให้ contextmenu event ของระบบทำงานต่อ
+        if (isMenuOpened && e.cancelable) {
+            // e.preventDefault(); // เปิดไว้ถ้ายังพบอาการเด้งซ้อน
+        }
+    });
 
-    bubbleEl.addEventListener('touchend', () => clearTimeout(touchTimeout));
     bubbleEl.addEventListener('touchmove', () => clearTimeout(touchTimeout));
 }
 
@@ -2105,4 +2121,5 @@ function toggleHelpPopup(show) {
 }
 
 initializeAuth();
+
 
