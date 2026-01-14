@@ -536,7 +536,7 @@ html {
 }
 
 #chatTitle {
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 700;
     color: #ffffff;
     flex-grow: 1;
@@ -548,7 +548,7 @@ html {
 #homeButton {
     background-color: rgba(255, 255, 255, 0.1);
     color: white;
-    padding: 6px 10px;
+    padding: 7px 10px !important;
     border-radius: 11px;
     cursor: pointer;
     transition: background-color var(--transition-time);
@@ -557,7 +557,7 @@ html {
     background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(5px);
-    font-size: 13px;
+    font-size: 11px !important;
     transition: all 0.2s;
 }
 
@@ -3420,3 +3420,4 @@ body.is-chatting .admin-bottom-nav {
     color: #3ddc84;
     /* สีเขียว Android */
 }
+
