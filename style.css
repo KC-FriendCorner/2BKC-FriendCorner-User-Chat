@@ -293,7 +293,8 @@ html {
 /* 5. Buttons (ยกเลิก Bubble Style) */
 /* =============================================== */
 .primary-button,
-.secondary-button {
+.secondary-button,
+.tertiary-button {
     border: none;
     padding: 12px 25px;
     /* 🔑 [EDIT] เปลี่ยนขอบมนกลับไปเป็น 25px */
@@ -367,6 +368,33 @@ html {
     box-shadow: 0 15px 30px rgba(165, 28, 48, 0.35);
 }
 
+.tertiary-button {
+    background: linear-gradient(135deg, var(--primary-color), #ff4f84);
+    color: white;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(165, 28, 48, 0.25);
+    /* เงาสีแดงจางๆ ตามสีปุ่ม */
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    align-items: center;
+}
+
+.tertiary-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 5px 15px rgba(233, 30, 99, 0.2);
+}
+
+
+.tertiary-button:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(165, 28, 48, 0.35);
+}
+
 .secondary-button {
     /* 🔑 [EDIT] เปลี่ยนพื้นหลังเป็นสีขาว */
     background-color: white;
@@ -414,7 +442,8 @@ html {
 /* =============================================== */
 /* 6. Chat Panel (Messenger Style Header) */
 /* =============================================== */
-#chatScreen {
+#chatScreen,
+#globalChatScreen {
     /* จะถูกเปลี่ยนเป็น flex ใน JS */
     flex-direction: column;
     height: 100vh;
@@ -633,7 +662,8 @@ html {
 /* =============================================== */
 /* 7. Chat Box และ Input (Messenger Style Input) */
 /* =============================================== */
-#chatBox {
+#chatBox,
+#globalChatBox {
     flex: 1;
     overflow-y: auto !important;
     padding: 10px 0px;
@@ -672,7 +702,8 @@ html {
     overflow-y: auto;
 }
 
-#chatBox::before {
+#chatBox::before,
+#globalChatBox::before {
     content: "";
     position: fixed;
     /* ล็อกไว้กับหน้าจอ */
@@ -904,7 +935,8 @@ body.is-chatting .admin-bottom-nav {
 }
 
 /* ช่องพิมพ์ข้อความ */
-#chatInput {
+#chatInput,
+#globalChatInput {
     flex: 1;
     border: none;
     outline: none;
@@ -1029,7 +1061,7 @@ body.is-chatting .admin-bottom-nav {
 /* --- 8.4 System Container (อยู่กลาง) --- */
 .system-container {
     display: block;
-    margin: 5px auto;
+    margin: 1px auto;
     text-align: center;
     max-width: 100%;
 }
@@ -1337,7 +1369,8 @@ body.is-chatting .admin-bottom-nav {
 /* --- 11. Scrollbar Customization --- */
 /* ปรับปรุง Scrollbar (สำหรับ WebKit) ให้เป็นสไตล์ที่บางและโปร่งใสขึ้น */
 #mainContainer::-webkit-scrollbar,
-#chatBox::-webkit-scrollbar {
+#chatBox::-webkit-scrollbar,
+#globalChatBox::-webkit-scrollbar {
     width: 6px;
     /* ทำให้ Scrollbar บางลง */
     background: transparent;
@@ -1345,7 +1378,8 @@ body.is-chatting .admin-bottom-nav {
 
 /* Scrollbar Thumb */
 #mainContainer::-webkit-scrollbar-thumb,
-#chatBox::-webkit-scrollbar-thumb {
+#chatBox::-webkit-scrollbar-thumb,
+#globalChatBox::-webkit-scrollbar-thumb {
     background-color: rgba(0, 0, 0, 0.15);
     /* สี Scrollbar */
     border-radius: 10px;
@@ -1353,13 +1387,15 @@ body.is-chatting .admin-bottom-nav {
 
 /* Scrollbar Track (ซ่อน Track ไว้เพื่อให้ดูสะอาด) */
 #mainContainer::-webkit-scrollbar-track,
-#chatBox::-webkit-scrollbar-track {
+#chatBox::-webkit-scrollbar-track,
+#globalChatBox::-webkit-scrollbar-track {
     background: transparent;
 }
 
 /* Scrollbar Hiding (สำหรับเบราว์เซอร์อื่น) */
 #mainContainer,
-#chatBox {
+#chatBox,
+#globalChatBox {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
@@ -1989,6 +2025,7 @@ body.is-chatting .admin-bottom-nav {
 
 /* กันไม่ให้เนื้อหาแชทโดนแถบ Nav ทับ */
 #chatBox,
+#globalChatBox,
 .chat-list-panel {
     padding-bottom: 20px !important;
     /* ปรับลดลง เพราะเราใช้ระบบ Full Screen แล้ว */
@@ -2226,6 +2263,18 @@ body.is-chatting .admin-bottom-nav {
     font-size: 16px;
     color: var(--text-color);
     display: block;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #ac0000 0%, #333 50%, #870029 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 5px;
+
+    background-size: 200% auto;
+    animation: titleEntrance 0.8s ease forwards, shineText 3s linear infinite;
+
+    /* เพิ่มเงาจางๆ ให้ตัวอักษรดูนูนออกมา */
+    filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.1));
 }
 
 .admin-role {
@@ -2425,7 +2474,8 @@ body.is-chatting .admin-bottom-nav {
 }
 
 .modal-btn:hover::after {
-    animation-duration: 1s; /* พอวางเมาส์แล้วแสงจะวิ่งไวขึ้น */
+    animation-duration: 1s;
+    /* พอวางเมาส์แล้วแสงจะวิ่งไวขึ้น */
 }
 
 /* ใส่ Delay ให้แต่ละไอเทมค่อยๆ โผล่ตามกันมา (Stagger) */
@@ -3080,6 +3130,7 @@ body.is-chatting .admin-bottom-nav {
 }
 
 .deleted-bubble {
+    padding: 4px 9px !important;
     border: 1px solid #ddd !important;
     color: #999 !important;
     box-shadow: none !important;
@@ -3174,7 +3225,7 @@ body.is-chatting .admin-bottom-nav {
     height: 100%;
     background: rgba(0, 0, 0, 0.7);
     /* พื้นหลังดำจาง */
-    display: flex;
+    display: none;
     justify-content: center;
     align-items: center;
     z-index: 999999;
@@ -3261,8 +3312,136 @@ body.is-chatting .admin-bottom-nav {
         opacity: 1;
         transform: scale(1) translateY(0);
     }
-
 }
+
+/* --- การจัดวาง Bubble (ซ้าย-ขวา) --- */
+.message {
+    display: flex;
+    flex-direction: column;
+    max-width: 80%;
+    position: relative;
+}
+
+.message.sent {
+    align-self: flex-end;
+    /* ชิดขวา (เราส่ง) */
+    align-items: flex-end;
+}
+
+.message.received {
+    align-self: flex-start;
+    /* ชิดซ้าย (คนอื่นส่ง) */
+    align-items: flex-start;
+}
+
+/* ชื่อผู้ใช้ด้านบน Bubble */
+.sender-name {
+    font-size: 11px;
+    color: #d4af37;
+    /* สีทอง */
+    margin-bottom: 4px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+/* --- สไตล์ Bubble ข้อความ --- */
+.message-bubble {
+    padding: 10px 15px;
+    font-size: 14px;
+    line-height: 1.4;
+    word-wrap: break-word;
+    position: relative;
+}
+
+/* ข้อความของเรา (แดง-ทอง) */
+.message.sent .message-bubble {
+    background: linear-gradient(135deg, #8b0000 0%, #ff0000 100%);
+    color: #fff;
+    border: 1px solid #d4af37;
+    border-radius: 18px 18px 2px 18px;
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+}
+
+/* ข้อความของคนอื่น (เทา-ดำ-ทอง) */
+.message.received .message-bubble {
+    background: #1a1a1a;
+    color: #fff;
+    border: 1px solid #333;
+    border-radius: 18px 18px 18px 2px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* --- ส่วนล่างที่พิมพ์ข้อความ --- */
+.public-input-area {
+    background: #000;
+    border-top: 1.5px solid #d4af37;
+    /* เส้นคั่นสีทอง */
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ปุ่มส่ง (Modern Style) */
+.send-btn-modern {
+    background: #d4af37;
+    color: #000;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.send-btn-modern:hover {
+    background: #fff;
+    transform: scale(1.1);
+}
+
+
+
+
+
+/* จัดตำแหน่งบับเบิ้ล */
+.message {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.message.sent {
+    align-items: flex-end;
+    /* ชิดขวา (ฝั่งเรา) */
+}
+
+.message.received {
+    align-items: flex-start;
+    /* ชิดซ้าย (คนอื่น) */
+}
+
+/* สีและรูปทรงบับเบิ้ล */
+.message.sent .message-bubble {
+    background: linear-gradient(135deg, #8b0000 0%, #ff0000 100%);
+    /* แดง */
+    color: white;
+    border: 1px solid #d4af37;
+    /* ขอบทอง */
+    border-radius: 15px 15px 0 15px;
+}
+
+.message.received .message-bubble {
+    background: #1a1a1a;
+    /* ดำ/เทาเข้ม */
+    color: white;
+    border: 1px solid #333;
+    border-radius: 15px 15px 15px 0;
+}
+
 
 /* สไตล์ปุ่มกลมมุมซ้ายล่าง */
 #floatingHelpBtn {
@@ -3420,4 +3599,3 @@ body.is-chatting .admin-bottom-nav {
     color: #3ddc84;
     /* สีเขียว Android */
 }
-
