@@ -3261,4 +3261,162 @@ body.is-chatting .admin-bottom-nav {
         opacity: 1;
         transform: scale(1) translateY(0);
     }
+
+}
+
+/* สไตล์ปุ่มกลมมุมซ้ายล่าง */
+#floatingHelpBtn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    background-color: #8b0000;
+    /* สีแดงเข้มตามธีม */
+    color: white;
+    border-radius: 50%;
+    border: 2px solid #d4af37;
+    /* ขอบทอง */
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 999;
+    /* ให้อยู่เหนือหน้าจอแชท */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s;
+}
+
+#floatingHelpBtn:active {
+    transform: scale(0.9);
+}
+
+/* สไตล์หน้าต่างป๊อปอัพ */
+#customHelpOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px);
+}
+
+.custom-help-content {
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    width: 80%;
+    max-width: 350px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.close-help-btn {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: #8b0000;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.header-help-btn {
+    width: 25px;
+    height: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 2px solid white;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    margin-right: 5px;
+    /* เว้นระยะจากขอบขวาเล็กน้อย */
+}
+
+.header-help-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.back-btn {
+    margin-top: 15px;
+    background: none;
+    border: 1px solid #8b0000;
+    color: #8b0000;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+}
+
+.help-detail-page p {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.help-menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.help-item-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    background: #fdfdfd;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.help-item-btn:hover {
+    background: #fff5f5;
+    border-color: #8b0000;
+}
+
+.help-item-btn i {
+    font-size: 18px;
+    width: 25px;
+    /* ล็อกความกว้างไอคอนให้ตรงกัน */
+    text-align: center;
+    color: #8b0000;
+}
+
+.back-btn {
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    background: white;
+    border: 1px solid #8b0000;
+    color: #8b0000;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.fa-apple {
+    margin-right: 5px;
+}
+
+.fa-android {
+    margin-right: 5px;
+    color: #3ddc84;
+    /* สีเขียว Android */
 }
