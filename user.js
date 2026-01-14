@@ -2106,4 +2106,3 @@ function toggleHelpPopup(show) {
 
 initializeAuth();
 
-
