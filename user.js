@@ -2081,4 +2081,29 @@ document.addEventListener('DOMContentLoaded', alignIndicator);
 window.addEventListener('load', alignIndicator);
 setTimeout(alignIndicator, 500); // จังหวะสุดท้าย เผื่อเครื่องอืด
 
+function showHelpDetail(page) {
+    // ซ่อนหน้าทั้งหมดก่อน (รวมหน้า install ที่เพิ่มใหม่)
+    document.getElementById('help-main-menu').style.display = 'none';
+    document.getElementById('help-detail-install').style.display = 'none';
+    document.getElementById('help-detail-warn').style.display = 'none';
+    document.getElementById('help-detail-delete').style.display = 'none';
+
+    // แสดงหน้าที่เลือก
+    if (page === 'main') {
+        document.getElementById('help-main-menu').style.display = 'block';
+    } else {
+        document.getElementById('help-detail-' + page).style.display = 'block';
+    }
+}
+
+function toggleHelpPopup(show) {
+    const overlay = document.getElementById('customHelpOverlay');
+    if (show) {
+        overlay.style.display = 'flex';
+        showHelpDetail('main'); // ทุกครั้งที่เปิดให้เริ่มที่หน้าเมนูหลัก
+    } else {
+        overlay.style.display = 'none';
+    }
+}
+
 initializeAuth();
