@@ -131,32 +131,31 @@ if (copyOption) {
 
 
 function setupContextMenu(bubbleEl, chatId, messageId) {
-    // ตรวจสอบว่าเป็นข้อความของ User ปัจจุบันหรือไม่
     const isUserMessage = firebase.auth().currentUser && firebase.auth().currentUser.uid === chatId;
 
-    // 🚩 Desktop (คลิกขวา) - เปลี่ยนมาใช้ addEventListener
+    // Desktop (คลิกขวา)
     bubbleEl.addEventListener('contextmenu', function (e) {
         e.preventDefault();
-        e.stopPropagation(); // กันไม่ให้ Event ไหลไปที่อื่น
-
+        e.stopPropagation();
         if (!isUserMessage) return;
 
         activeMessageIdForContextMenu = messageId;
         activeChatIdForContextMenu = chatId;
-
-        // แสดงเมนู
+        
         contextMenu.style.display = 'block';
         contextMenu.style.left = e.clientX + 'px';
         contextMenu.style.top = e.clientY + 'px';
-
-        if (deleteOption) deleteOption.style.display = 'block';
+        deleteOption.style.display = 'block';
     });
 
-    // 🚩 Mobile (กดค้าง) - ปรับปรุง Logic
+    // Mobile (กดค้าง) - แก้ไขจุดนี้ให้ไม่เด้งซ้ำ
     let touchTimeout;
     bubbleEl.addEventListener('touchstart', function (e) {
         touchTimeout = setTimeout(() => {
             if (!isUserMessage) return;
+            
+            // ✅ ป้องกันเมนูของระบบมือถือ (Copy/Paste) ขึ้นมาแทรก
+            if (e.cancelable) e.preventDefault(); 
 
             const touch = e.touches[0];
             activeMessageIdForContextMenu = messageId;
@@ -165,10 +164,12 @@ function setupContextMenu(bubbleEl, chatId, messageId) {
             contextMenu.style.display = 'block';
             contextMenu.style.left = touch.clientX + 'px';
             contextMenu.style.top = touch.clientY + 'px';
-
-            if (deleteOption) deleteOption.style.display = 'block';
-        }, 700); // เพิ่มเวลาเป็น 0.7 วินาทีเพื่อให้เสถียรขึ้น
-    }, { passive: true });
+            deleteOption.style.display = 'block';
+            
+            // สั่นนิดๆ ให้รู้ว่ากดติด (ถ้ามือถือรองรับ)
+            if (navigator.vibrate) navigator.vibrate(20);
+        }, 700); 
+    }, { passive: false }); // ✅ ต้องเป็น false เพื่อให้ใช้ preventDefault ได้
 
     bubbleEl.addEventListener('touchend', () => clearTimeout(touchTimeout));
     bubbleEl.addEventListener('touchmove', () => clearTimeout(touchTimeout));
@@ -932,7 +933,7 @@ function notifyAdmin(messageText) {
 }
 
 function deleteMessage(chatId, messageId) {
-    // 1. ถามแค่ครั้งเดียวตรงนี้พอ
+    // ถามยืนยันแค่ครั้งเดียว
     if (!confirm("❗ต้องการยกเลิกการส่งหรือไม่?")) return;
 
     database.ref(`${CHATS_PATH}/${chatId}/messages/${messageId}`).update({
@@ -940,11 +941,10 @@ function deleteMessage(chatId, messageId) {
         text: null,
         deletedAt: TIMESTAMP
     }).then(() => {
-        // 2. ลบ alert("ข้อความถูกยกเลิกการส่งแล้ว"); ออกไปเลย 
-        // เพราะ handleMessageChange จะอัปเดตหน้าจอให้คนเห็นเองอยู่แล้วครับ
-        console.log("Message deleted successfully");
+        // ✅ ลบ alert("ข้อความถูกยกเลิกแล้ว") ออก เพื่อไม่ให้ถามซ้ำ 2 รอบ
+        console.log("Unsend success");
     }).catch(error => {
-        console.error("Error deleting message:", error);
+        console.error("Error deleting:", error);
         alert("เกิดข้อผิดพลาดในการลบข้อความ");
     });
 }
@@ -2105,4 +2105,5 @@ function toggleHelpPopup(show) {
 }
 
 initializeAuth();
+
 
