@@ -911,7 +911,7 @@ function notifyAdmin(messageText) {
         const adminToken = snap.val();
 
         if (adminToken) {
-            fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
+            fetch('https://baojaiadmin.smtekc.com/api/send-notify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -919,7 +919,7 @@ function notifyAdmin(messageText) {
                     title: 'มีข้อความใหม่จากผู้ใช้! 📩',
                     body: messageText,
                     data: {
-                        url: 'https://2bkc-baojai-zone-admin.vercel.app/' // URL หน้าแอดมิน
+                        url: 'https://baojaiadmin.smtekc.com/' // URL หน้าแอดมิน
                     }
                 })
             })
@@ -1128,7 +1128,7 @@ function handleUserSendMessage(messageText) {
 
                 // 3. ยิง API ไปยัง Vercel เพื่อส่งแจ้งเตือนหาแอดมิน
                 // ใช้ URL เต็ม และใส่รูปภาพเพื่อความสวยงาม
-                fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
+                fetch('https://baojaiadmin.smtekc.com/api/send-notify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1136,7 +1136,7 @@ function handleUserSendMessage(messageText) {
                         title: `📩 ข้อความใหม่จาก ${userName}`,
                         body: messageText,
                         recipientUid: 'admin_team', // จัดกลุ่มแจ้งเตือนไม่ให้เด้งซ้ำซ้อน
-                        image: user.photoURL || 'https://2bkc-baojai-zone.vercel.app/KCLOGO.png' // ใส่รูปโปรไฟล์
+                        image: user.photoURL || 'https://baojaizone.smtekc.com/KCLOGO.png' // ใส่รูปโปรไฟล์
                     })
                 })
                     .then(res => res.json())
@@ -1169,14 +1169,14 @@ function notifyAdmin(msg) {
     database.ref('admin_metadata/fcmToken').once('value').then(snap => {
         const adminToken = snap.val();
         if (adminToken) {
-            fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
+            fetch('https://baojaiadmin.smtekc.com/api/send-notify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     token: adminToken,
                     title: 'มีข้อความใหม่จากผู้ใช้! 📩',
                     body: msg,
-                    data: { url: 'https://2bkc-baojai-zone-admin.vercel.app/' }
+                    data: { url: 'https://baojaiadmin.smtekc.com/' }
                 })
             }).catch(err => console.error("API Error:", err));
         }
@@ -1239,7 +1239,7 @@ function notifyAdmin(adminUid, messageText) {
                 const token = childSnapshot.val();
 
                 // ส่งแจ้งเตือนไปยังแต่ละ Token (แต่ละเครื่อง)
-                fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
+                fetch('https://baojaiadmin.smtekc.com/api/send-notify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1294,7 +1294,7 @@ async function notifyAdmin(adminUid, messageText) {
                 title: 'มีข้อความใหม่จากผู้ใช้ 📩',
                 body: messageText,
                 recipientUid: adminUid,
-                link: 'https://2bkc-baojai-zone-admin.vercel.app/' // ลิงก์สำหรับแอดมิน
+                link: 'https://baojaiadmin.smtekc.com/' // ลิงก์สำหรับแอดมิน
             })
         })
             .then(res => res.json())
@@ -1317,16 +1317,16 @@ async function notifyAdmin(messageText) {
             // ในฟังก์ชัน notifyAdmin ช่วงที่ fetch
             const sendPromises = tokens.map(token => {
                 if (typeof token === 'string' && token.length > 10) {
-                    return fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
+                    return fetch('https://baojaiadmin.smtekc.com/api/send-notify', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             token: token,
                             title: "มีข้อความใหม่! 💬",
                             body: messageText,
-                            icon: 'https://2bkc-baojai-zone-admin.vercel.app/adminปก1.png', // รูปเล็ก
-                            image: 'https://2bkc-baojai-zone-admin.vercel.app/adminปก1.png',
-                            link: "https://2bkc-baojai-zone-admin.vercel.app/"
+                            icon: 'https://baojaiadmin.smtekc.com/adminปก1.png', // รูปเล็ก
+                            image: 'https://baojaiadmin.smtekc.com/adminปก1.png',
+                            link: "https://baojaiadmin.smtekc.com/"
                         })
                     }).then(res => {
                         // ถ้าส่งสำเร็จหรือ Token หมดอายุ (410) ให้ถือว่าจบงาน ไม่ต้อง Throw Error
