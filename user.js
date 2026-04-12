@@ -131,31 +131,32 @@ if (copyOption) {
 
 
 function setupContextMenu(bubbleEl, chatId, messageId) {
+    // ตรวจสอบว่าเป็นข้อความของ User ปัจจุบันหรือไม่
     const isUserMessage = firebase.auth().currentUser && firebase.auth().currentUser.uid === chatId;
 
-    // Desktop (คลิกขวา)
+    // 🚩 Desktop (คลิกขวา) - เปลี่ยนมาใช้ addEventListener
     bubbleEl.addEventListener('contextmenu', function (e) {
         e.preventDefault();
-        e.stopPropagation();
+        e.stopPropagation(); // กันไม่ให้ Event ไหลไปที่อื่น
+
         if (!isUserMessage) return;
 
         activeMessageIdForContextMenu = messageId;
         activeChatIdForContextMenu = chatId;
-        
+
+        // แสดงเมนู
         contextMenu.style.display = 'block';
         contextMenu.style.left = e.clientX + 'px';
         contextMenu.style.top = e.clientY + 'px';
-        deleteOption.style.display = 'block';
+
+        if (deleteOption) deleteOption.style.display = 'block';
     });
 
-    // Mobile (กดค้าง) - แก้ไขจุดนี้ให้ไม่เด้งซ้ำ
+    // 🚩 Mobile (กดค้าง) - ปรับปรุง Logic
     let touchTimeout;
     bubbleEl.addEventListener('touchstart', function (e) {
         touchTimeout = setTimeout(() => {
             if (!isUserMessage) return;
-            
-            // ✅ ป้องกันเมนูของระบบมือถือ (Copy/Paste) ขึ้นมาแทรก
-            if (e.cancelable) e.preventDefault(); 
 
             const touch = e.touches[0];
             activeMessageIdForContextMenu = messageId;
@@ -164,12 +165,10 @@ function setupContextMenu(bubbleEl, chatId, messageId) {
             contextMenu.style.display = 'block';
             contextMenu.style.left = touch.clientX + 'px';
             contextMenu.style.top = touch.clientY + 'px';
-            deleteOption.style.display = 'block';
-            
-            // สั่นนิดๆ ให้รู้ว่ากดติด (ถ้ามือถือรองรับ)
-            if (navigator.vibrate) navigator.vibrate(20);
-        }, 700); 
-    }, { passive: false }); // ✅ ต้องเป็น false เพื่อให้ใช้ preventDefault ได้
+
+            if (deleteOption) deleteOption.style.display = 'block';
+        }, 700); // เพิ่มเวลาเป็น 0.7 วินาทีเพื่อให้เสถียรขึ้น
+    }, { passive: true });
 
     bubbleEl.addEventListener('touchend', () => clearTimeout(touchTimeout));
     bubbleEl.addEventListener('touchmove', () => clearTimeout(touchTimeout));
@@ -210,7 +209,7 @@ window.showStartScreen = function () {
 
         authButton.style.display = 'none';
         mainActions.style.display = 'flex';
-        startChatBtn.textContent = 'กดเพื่อสนทนา';
+        startChatBtn.textContent = 'แชทสนทนาส่วนตัว';
         startChatBtn.onclick = window.loadOrCreateChat;
         logoutBtn.onclick = window.userLogout;
 
@@ -911,7 +910,7 @@ function notifyAdmin(messageText) {
         const adminToken = snap.val();
 
         if (adminToken) {
-            fetch('https://baojaiadmin.smtekc.com/api/send-notify', {
+            fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -919,7 +918,7 @@ function notifyAdmin(messageText) {
                     title: 'มีข้อความใหม่จากผู้ใช้! 📩',
                     body: messageText,
                     data: {
-                        url: 'https://baojaiadmin.smtekc.com/' // URL หน้าแอดมิน
+                        url: 'https://2bkc-baojai-zone-admin.vercel.app/' // URL หน้าแอดมิน
                     }
                 })
             })
@@ -933,7 +932,7 @@ function notifyAdmin(messageText) {
 }
 
 function deleteMessage(chatId, messageId) {
-    // ถามยืนยันแค่ครั้งเดียว
+    // 1. ถามแค่ครั้งเดียวตรงนี้พอ
     if (!confirm("❗ต้องการยกเลิกการส่งหรือไม่?")) return;
 
     database.ref(`${CHATS_PATH}/${chatId}/messages/${messageId}`).update({
@@ -941,10 +940,11 @@ function deleteMessage(chatId, messageId) {
         text: null,
         deletedAt: TIMESTAMP
     }).then(() => {
-        // ✅ ลบ alert("ข้อความถูกยกเลิกแล้ว") ออก เพื่อไม่ให้ถามซ้ำ 2 รอบ
-        console.log("Unsend success");
+        // 2. ลบ alert("ข้อความถูกยกเลิกการส่งแล้ว"); ออกไปเลย 
+        // เพราะ handleMessageChange จะอัปเดตหน้าจอให้คนเห็นเองอยู่แล้วครับ
+        console.log("Message deleted successfully");
     }).catch(error => {
-        console.error("Error deleting:", error);
+        console.error("Error deleting message:", error);
         alert("เกิดข้อผิดพลาดในการลบข้อความ");
     });
 }
@@ -1128,7 +1128,7 @@ function handleUserSendMessage(messageText) {
 
                 // 3. ยิง API ไปยัง Vercel เพื่อส่งแจ้งเตือนหาแอดมิน
                 // ใช้ URL เต็ม และใส่รูปภาพเพื่อความสวยงาม
-                fetch('https://baojaiadmin.smtekc.com/api/send-notify', {
+                fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1136,7 +1136,7 @@ function handleUserSendMessage(messageText) {
                         title: `📩 ข้อความใหม่จาก ${userName}`,
                         body: messageText,
                         recipientUid: 'admin_team', // จัดกลุ่มแจ้งเตือนไม่ให้เด้งซ้ำซ้อน
-                        image: user.photoURL || 'https://baojaizone.smtekc.com/KCLOGO.png' // ใส่รูปโปรไฟล์
+                        image: user.photoURL || 'https://2bkc-baojai-zone.vercel.app/KCLOGO.png' // ใส่รูปโปรไฟล์
                     })
                 })
                     .then(res => res.json())
@@ -1169,14 +1169,14 @@ function notifyAdmin(msg) {
     database.ref('admin_metadata/fcmToken').once('value').then(snap => {
         const adminToken = snap.val();
         if (adminToken) {
-            fetch('https://baojaiadmin.smtekc.com/api/send-notify', {
+            fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     token: adminToken,
                     title: 'มีข้อความใหม่จากผู้ใช้! 📩',
                     body: msg,
-                    data: { url: 'https://baojaiadmin.smtekc.com/' }
+                    data: { url: 'https://2bkc-baojai-zone-admin.vercel.app/' }
                 })
             }).catch(err => console.error("API Error:", err));
         }
@@ -1239,7 +1239,7 @@ function notifyAdmin(adminUid, messageText) {
                 const token = childSnapshot.val();
 
                 // ส่งแจ้งเตือนไปยังแต่ละ Token (แต่ละเครื่อง)
-                fetch('https://baojaiadmin.smtekc.com/api/send-notify', {
+                fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1294,7 +1294,7 @@ async function notifyAdmin(adminUid, messageText) {
                 title: 'มีข้อความใหม่จากผู้ใช้ 📩',
                 body: messageText,
                 recipientUid: adminUid,
-                link: 'https://baojaiadmin.smtekc.com/' // ลิงก์สำหรับแอดมิน
+                link: 'https://2bkc-baojai-zone-admin.vercel.app/' // ลิงก์สำหรับแอดมิน
             })
         })
             .then(res => res.json())
@@ -1317,16 +1317,16 @@ async function notifyAdmin(messageText) {
             // ในฟังก์ชัน notifyAdmin ช่วงที่ fetch
             const sendPromises = tokens.map(token => {
                 if (typeof token === 'string' && token.length > 10) {
-                    return fetch('https://baojaiadmin.smtekc.com/api/send-notify', {
+                    return fetch('https://2bkc-baojai-zone-admin.vercel.app/api/send-notify', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             token: token,
                             title: "มีข้อความใหม่! 💬",
                             body: messageText,
-                            icon: 'https://baojaiadmin.smtekc.com/adminปก1.png', // รูปเล็ก
-                            image: 'https://baojaiadmin.smtekc.com/adminปก1.png',
-                            link: "https://baojaiadmin.smtekc.com/"
+                            icon: 'https://2bkc-baojai-zone-admin.vercel.app/adminปก1.png', // รูปเล็ก
+                            image: 'https://2bkc-baojai-zone-admin.vercel.app/adminปก1.png',
+                            link: "https://2bkc-baojai-zone-admin.vercel.app/"
                         })
                     }).then(res => {
                         // ถ้าส่งสำเร็จหรือ Token หมดอายุ (410) ให้ถือว่าจบงาน ไม่ต้อง Throw Error
@@ -2079,6 +2079,121 @@ document.addEventListener('DOMContentLoaded', alignIndicator);
 window.addEventListener('load', alignIndicator);
 setTimeout(alignIndicator, 500); // จังหวะสุดท้าย เผื่อเครื่องอืด
 
+// ฟังก์ชันสำหรับเปิดหน้าแชทรวม
+function openGlobalChat() {
+    // 1. ปิดหน้าจออื่น
+    document.getElementById('welcomeScreen').style.display = 'none';
+    document.getElementById('chatScreen').style.display = 'none';
+
+    // 2. เปิดหน้าแชทรวม
+    const globalScreen = document.getElementById('globalChatScreen');
+    globalScreen.style.display = 'flex';
+
+    // 3. เริ่มโหลดข้อความ
+    loadGlobalMessages();
+}
+
+// โหลดข้อความจาก Firebase
+function loadGlobalMessages() {
+    const globalRef = firebase.database().ref('global_messages');
+
+    // ใช้ .on('value') เพื่อดึงข้อมูลทั้งหมดและอัปเดตแบบ Real-time
+    globalRef.on('value', (snapshot) => {
+        const container = document.getElementById('globalChatBox');
+        if (!container) return;
+
+        container.innerHTML = ''; // ล้างแชทเก่าเพื่อโหลดใหม่ให้เรียงถูกต้อง
+        const data = snapshot.val();
+
+        if (data) {
+            // เรียงลำดับข้อความตามเวลา (เผื่อ Firebase ส่งมาไม่เรียง)
+            const keys = Object.keys(data);
+
+            keys.forEach(key => {
+                const msg = data[key];
+                const currentUser = firebase.auth().currentUser;
+                // ตรวจสอบว่าเป็นข้อความของเราหรือไม่
+                const isMe = currentUser && msg.senderId === currentUser.uid;
+
+                // สร้างโครงสร้าง HTML ให้เหมือนแชทส่วนตัวเป๊ะๆ
+                const msgDiv = document.createElement('div');
+
+                // ใช้ class 'message sent' สำหรับเรา และ 'message received' สำหรับคนอื่น
+                // ซึ่งเป็นมาตรฐานที่แชทส่วนตัวส่วนใหญ่ใช้ควบคู่กับ CSS แดง-ทองของคุณ
+                msgDiv.className = `message ${isMe ? 'sent' : 'received'}`;
+
+                // จัดรูปแบบเวลา
+                const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+                // ใส่เนื้อหาข้างในบับเบิ้ล
+                // ถ้าไม่ใช่เรา (received) จะโชว์ชื่อ User ย่อๆ สีทองด้านบน
+                msgDiv.innerHTML = `
+                    ${!isMe ? `<div class="sender-name" style="color: #d4af37; font-size: 11px; margin-bottom: 4px;">User-${msg.senderId.substring(0, 4)}</div>` : ''}
+                    <div class="message-bubble">
+                        ${msg.text}
+                    </div>
+                    <div class="message-time" style="font-size: 10px; opacity: 0.6; margin-top: 4px;">${timeStr}</div>
+                `;
+
+                container.appendChild(msgDiv);
+            });
+
+            // เลื่อนลงไปล่างสุดเสมอเมื่อมีข้อความใหม่
+            container.scrollTop = container.scrollHeight;
+        }
+    });
+}
+
+function sendGlobalMessage() {
+    const input = document.getElementById('globalChatInput');
+    if (!input) return;
+
+    const text = input.value.trim();
+    if (!text) return;
+
+    // ดึง User ปัจจุบันจาก Firebase
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        alert("กรุณาเริ่มต้นใช้งานก่อนส่งข้อความ");
+        return;
+    }
+
+    firebase.database().ref('global_messages').push({
+        senderId: user.uid, // ต้องตรงกับ auth.uid ใน Rules
+        text: text,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        input.value = '';
+        input.style.height = 'auto';
+    }).catch((error) => {
+        console.error("ส่งไม่สำเร็จ:", error);
+        if (error.code === 'PERMISSION_DENIED') {
+            alert("ไม่สามารถส่งได้: ตรวจสอบกฎการเข้าถึงใน Firebase");
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // ฟังก์ชันช่วยจัดการการกด Enter
+    const setupEnterKey = (inputId, sendFunction) => {
+        const inputElement = document.getElementById(inputId);
+        if (inputElement) {
+            inputElement.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendFunction();
+                }
+            });
+        }
+    };
+
+    // ตั้งค่าสำหรับหน้าแชทส่วนตัว (ใช้ ID: chatInput)
+    setupEnterKey('chatInput', sendMessage); // ตรวจสอบว่าฟังก์ชันส่งข้อความส่วนตัวชื่อ sendMessage หรือไม่
+
+    // ตั้งค่าสำหรับหน้าแชทรวม (ใช้ ID: globalChatInput)
+    setupEnterKey('globalChatInput', sendGlobalMessage);
+});
+
 function showHelpDetail(page) {
     // ซ่อนหน้าทั้งหมดก่อน (รวมหน้า install ที่เพิ่มใหม่)
     document.getElementById('help-main-menu').style.display = 'none';
@@ -2104,5 +2219,105 @@ function toggleHelpPopup(show) {
     }
 }
 
-initializeAuth();
+function openSpaceMessage() {
+    document.getElementById('spaceOverlay').style.display = 'flex';
+    resetSpaceScene();
+}
 
+function resetSpaceScene() {
+    const letter = document.getElementById('paperLetter');
+    const rocket = document.getElementById('rocketShip');
+    const sky = document.getElementById('skyBg');
+    const moon = document.getElementById('moon');
+    const earth = document.getElementById('earth');
+    const btn = document.getElementById('launchBtn');
+    const droppedLetter = document.getElementById('droppedLetter');
+    const input = document.getElementById('spaceInput');
+
+    // 1. ล้าง Class แอนิเมชันทั้งหมด
+    rocket.classList.remove('engine-start', 'take-off-zoom', 'approaching-moon', 'orbiting-moon', 'landing-sequence', 'touchdown');
+    letter.classList.remove('fold-to-rocket');
+    earth.classList.remove('earth-depart');
+    if (droppedLetter) {
+        droppedLetter.classList.remove('letter-falling');
+        droppedLetter.style.display = 'none';
+    }
+
+    // 2. รีเซ็ตตำแหน่งและการแสดงผล
+    sky.style.transform = 'translateY(-80%)'; // กลับไปที่พื้นดิน
+    moon.style.opacity = '0';
+    moon.style.zIndex = '2';
+    btn.style.visibility = 'visible';
+
+    // 3. ล้างข้อความในจดหมาย (ถ้าต้องการให้พิมพ์ใหม่ทุกครั้ง)
+    input.value = '';
+}
+
+function startArtemisLaunch() {
+    const letter = document.getElementById('paperLetter');
+    const rocket = document.getElementById('rocketShip');
+    const sky = document.getElementById('skyBg');
+    const moon = document.getElementById('moon');
+    const earth = document.getElementById('earth');
+    const btn = document.getElementById('launchBtn');
+
+    if (!document.getElementById('spaceInput').value.trim()) return alert("กรุณาพิมพ์ข้อความก่อนครับ");
+
+    btn.style.visibility = 'hidden';
+
+    // 1. พับจดหมาย
+    letter.classList.add('fold-to-rocket');
+
+    setTimeout(() => {
+        // 2. จุดเครื่องยนต์
+        rocket.classList.add('engine-start');
+
+        setTimeout(() => {
+            // 3. ทะยาน: จรวด Zoom เข้าหาจอ / โลกเลื่อนลง / ท้องฟ้าเปลี่ยน
+            rocket.classList.add('take-off-zoom');
+            earth.classList.add('earth-depart'); // โลกแยกเลื่อนลงเอง
+            sky.style.transform = 'translateY(0%)';
+
+            setTimeout(() => {
+                // 4. บินห่างออกไปหาอวกาศ (หดตัวลง)
+                rocket.classList.remove('take-off-zoom');
+                rocket.classList.add('approaching-moon');
+
+                setTimeout(() => {
+                    // 5. ดวงจันทร์ปรากฏกลางจอ
+                    moon.style.opacity = '1';
+                    moon.style.zIndex = '20';
+
+                    setTimeout(() => {
+                        // 6. เตรียมลงจอด
+                        rocket.classList.remove('approaching-moon');
+                        rocket.classList.add('landing-sequence');
+
+                        setTimeout(() => {
+                            // 7. จอดสนิท
+                            rocket.classList.remove('engine-start');
+                            rocket.classList.add('touchdown');
+
+                            // ... โค้ดส่วนท้ายของ startArtemisLaunch ...
+                            setTimeout(() => {
+                                alert("ภารกิจสำเร็จ! ฝากจดหมายไว้ที่ดวงจันทร์เรียบร้อย ✨🌕");
+                                closeSpace(); // ฟังก์ชันนี้จะเรียก resetSpaceScene() ให้เอง
+                            }, 3500);
+                        }, 2500);
+                    }, 2000);
+                }, 3000);
+            }, 1500);
+        }, 1500);
+    }, 1000);
+}
+
+function closeSpace() {
+    document.getElementById('spaceOverlay').style.display = 'none';
+    resetSpaceScene(); // เรียกใช้ตรงนี้เพื่อให้เปิดมาใหม่แล้วสะอาดเอี่ยม
+}
+
+window.songkran = function() {
+    window.location.href = 'songkran.html';
+};
+
+initializeAuth();

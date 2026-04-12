@@ -1,0 +1,337 @@
+:root {
+    --main-blue: #03a9f4;
+    --sky-blue: #b3e5fc;
+    --soft-pink: #f06292;
+    --sunny-yellow: #fff176;
+    --glass: rgba(255, 255, 255, 0.92);
+    --text-dark: #01579b;
+    --accent-orange: #ff7043;
+}
+
+* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+body, html {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    font-family: 'Kanit', sans-serif;
+    background-color: var(--sky-blue); overflow: hidden;
+}
+
+.screen {
+    display: none;
+    position: fixed; width: 100%; height: 100%;
+    align-items: center; justify-content: center;
+    transition: opacity 0.8s ease;
+}
+.screen.active { display: flex; opacity: 1; }
+
+/* Cinematic Background */
+.cinematic-bg {
+    position: fixed; width: 100%; height: 100%; z-index: -1;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.3)), 
+                url('https://images.unsplash.com/photo-1512100356132-d3224d82b2f9?q=80&w=2000') center/cover;
+    background-size: cover; background-position: center;
+}
+
+.ui-layer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.sun-flare {
+    position: absolute; top: -50px; right: -50px; width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(255,253,231,0.6) 0%, transparent 70%);
+    filter: blur(30px); animation: pulse 4s infinite alternate;
+}
+@keyframes pulse { from { opacity: 0.4; transform: scale(1); } to { opacity: 0.8; transform: scale(1.2); } }
+
+/* Cute Card Style */
+.cute-card {
+    background: var(--glass);
+    backdrop-filter: blur(15px);
+    border: 6px solid #fff;
+    padding: 3rem 1.5rem; border-radius: 40px;
+    text-align: center; width: 90%; max-width: 450px;
+    box-shadow: 0 20px 40px rgba(1, 87, 155, 0.15);
+    color: var(--text-dark);
+    animation: cardEntrance 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes cardEntrance {
+    from { opacity: 0; transform: scale(0.9) translateY(30px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.logo-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.app-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 50%;
+    background: transparent;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.app-logo:hover { transform: scale(1.1) rotate(5deg); }
+
+.badge { 
+    font-size: 0.8rem; letter-spacing: 3px; color: var(--soft-pink); 
+    margin-bottom: 15px; font-weight: 800; text-transform: uppercase;
+}
+
+.main-title { 
+    font-size: 3.2rem; margin: 0; line-height: 1; font-weight: 900;
+    background: linear-gradient(135deg, #01579b 20%, #03a9f4 50%, #f06292 80%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: textShine 4s linear infinite;
+}
+
+@keyframes textShine {
+    to { background-position: 200% center; }
+}
+
+.accent { 
+    display: block; margin-top: 8px;
+    font-size: 1.1rem; color: var(--soft-pink); 
+    letter-spacing: 1px; font-weight: 600;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 4px rgba(240, 98, 146, 0.2);
+}
+
+.subtitle { font-size: 1rem; opacity: 0.8; margin-bottom: 20px; }
+
+.action-btn {
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #03a9f4, #0288d1); color: #fff; border: none;
+    padding: 1.2rem; border-radius: 25px; font-weight: 600;
+    font-size: 1.2rem; width: 100%; margin-top: 20px; cursor: pointer;
+    transition: 0.3s; box-shadow: 0 8px 0 #01579b;
+    pointer-events: auto; /* มั่นใจว่าปุ่มรับคำสั่งได้ */
+}
+
+.action-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #01579b; }
+
+.secondary-btn {
+    background: #fff;
+    color: var(--main-blue);
+    border: 3px solid var(--main-blue);
+    padding: 1.2rem; border-radius: 25px; font-weight: 600;
+    font-size: 1.2rem; width: 100%; margin-top: 10px; cursor: pointer;
+    transition: 0.3s; box-shadow: 0 6px 0 var(--main-blue);
+}
+.secondary-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--main-blue); }
+
+.back-link {
+    background: transparent; border: none;
+    color: var(--text-dark);
+    margin-top: 20px; font-size: 0.7rem; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    opacity: 0.7; transition: 0.3s; width: 100%;
+    text-decoration: none;
+    margin-bottom: -35px;
+}
+.back-link:hover { opacity: 1; }
+
+.floating-back {
+    position: absolute; top: 20px; left: 20px;
+    width: 45px; height: 45px; background: var(--glass);
+    border: 3px solid #fff; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--main-blue); font-size: 1.2rem;
+    cursor: pointer; z-index: 100;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: 0.3s;
+}
+.floating-back:active { transform: scale(0.9); }
+
+textarea {
+    width: 100%; height: 100px; background: #f5f5f5;
+    border: 2px solid #e1f5fe; border-radius: 20px;
+    color: #333; padding: 15px; font-size: 1rem; margin-top: 10px;
+    outline: none; resize: none;
+    -webkit-user-select: text; user-select: text; /* อนุญาตให้พิมพ์ใน textarea */
+}
+
+
+/* Jelly Bubble */
+.jelly-bubble {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle at 30% 30%, 
+                rgba(255, 255, 255, 0.9) 0%, 
+                rgba(179, 229, 252, 0.4) 50%, 
+                rgba(240, 98, 146, 0.2) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #01579b; text-align: center; font-size: 1.2rem; font-weight: 600;
+    box-shadow: inset -10px -10px 20px rgba(0,0,0,0.05), 
+                inset 10px 10px 20px rgba(255,255,255,0.5);
+    backdrop-filter: blur(2px);
+    padding: 20px;
+    transition: width 0.1s, height 0.1s, transform 0.3s;
+    overflow: hidden; /* ป้องกันข้อความล้นทะลุขอบฟอง */
+    z-index: 2;
+}
+
+.bubble-shine {
+    position: absolute;
+    top: 15%; left: 15%;
+    width: 25%; height: 15%;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    transform: rotate(-45deg);
+    filter: blur(2px);
+}
+
+#bubble-text {
+    width: 100%;
+    word-break: break-word; /* ตัดคำอัตโนมัติเมื่อยาวเกินบรรทัด */
+    overflow-wrap: break-word;
+    line-height: 1.3;
+    display: block;
+}
+
+@keyframes wobble { 
+    0%, 100% { border-radius: 50%; } 
+    50% { border-radius: 45% 55% 48% 52%; transform: scale(1.05); } 
+}
+.wobble { animation: wobble 0.2s infinite ease-in-out; }
+
+/* Collision Animation */
+.collision-pulse {
+    animation: collisionPulse 0.5s ease-out;
+}
+@keyframes collisionPulse {
+    0% { filter: brightness(1); }
+    50% { filter: brightness(1.5); transform: translate(-50%, -50%) scale(1.1); }
+    100% { filter: brightness(1); }
+}
+
+@keyframes float { 0%, 100% { transform: translate(-50%, -53%); } 50% { transform: translate(-50%, -47%); } }
+
+/* Realistic Gun Model */
+.weapon-container { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10; }
+.recoil { animation: recoil 0.1s infinite; }
+@keyframes recoil { 0% { transform: translateY(0); } 50% { transform: translateY(10px) scale(0.95); } }
+
+.gun-model { width: 120px; height: 180px; position: relative; }
+
+.gun-nozzle {
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    width: 16px; height: 12px; background: #444; border-radius: 3px;
+    z-index: 5;
+}
+
+.gun-barrel {
+    width: 34px; height: 70px; 
+    background: linear-gradient(to right, #fdd835, #fff176, #fdd835);
+    border-radius: 8px 8px 4px 4px;
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    border: 3px solid #fff;
+    box-shadow: inset -5px 0 10px rgba(0,0,0,0.1);
+    z-index: 4;
+}
+
+.gun-body-bridge {
+    position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+    width: 50px; height: 30px; background: #fff;
+    border-radius: 10px; z-index: 3;
+}
+
+.gun-tank-pro {
+    width: 80px; height: 110px; 
+    background: linear-gradient(to right, #ff5722, #ff7043, #ff5722);
+    border-radius: 30px; position: absolute; bottom: 0; left: 50%;
+    transform: translateX(-50%); border: 5px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15), inset -8px 0 15px rgba(0,0,0,0.1);
+    z-index: 2;
+}
+
+.gun-handle {
+    position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%);
+    width: 45px; height: 60px; 
+    background: linear-gradient(to bottom, #fff, #e1f5fe);
+    border: 4px solid var(--sky-blue);
+    border-radius: 10px 10px 20px 20px;
+    z-index: 1;
+    clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%); /* ทรงด้ามจับเอียง */
+}
+
+.gun-handle::after { /* ไกปืน */
+    content: ''; position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+    width: 12px; height: 20px; background: #f06292; border-radius: 5px;
+}
+
+.gun-logo {
+    width: 55px;
+    height: 55px;
+    object-fit: contain;
+    background: rgba(255, 255, 255, 0.9); /* พื้นหลังขาวจางๆ เพื่อให้โลโก้เด่นบนถังสีส้ม */
+    border-radius: 50%;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    pointer-events: none;
+    user-select: none;
+}
+
+.nozzle-light {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 15px; height: 15px; background: #fff;
+    filter: blur(5px); display: none;
+}
+
+.pro-instruction {
+    margin-top: 350px; /* เว้นระยะจาก Bubble */
+    width: 80%;
+    text-align: center;
+    color: var(--main-blue);
+    background: rgba(255,255,255,0.4);
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0.7;
+    pointer-events: none;
+    text-shadow: 0 2px 4px rgba(255,255,255,0.5);
+}
+
+/* Success Screen */
+.success-content {
+    text-align: center;
+    color: var(--text-dark);
+    background: var(--glass);
+    padding: 3rem 2rem;
+    border-radius: 40px;
+    backdrop-filter: blur(20px);
+    border: 6px solid #fff;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    animation: slideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.success-icon { font-size: 5rem; color: #4caf50; margin-bottom: 1.5rem; }
+.success-content h2 { font-size: 2rem; margin-bottom: 10px; color: var(--main-blue); }
+.success-content p { font-size: 1.1rem; margin-bottom: 30px; opacity: 0.8; }
+
+@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+#particleCanvas { position: absolute; inset: 0; pointer-events: none; z-index: 5; }

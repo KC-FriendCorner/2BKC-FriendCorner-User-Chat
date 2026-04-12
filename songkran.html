@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Songkran Cinematic | สาดน้ำล้างใจ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;600&family=Mitr:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="songkran-style.css">
+</head>
+<body>
+    <div id="app">
+        <div class="cinematic-bg">
+            <div class="sun-flare"></div>
+            <div class="summer-clouds"></div>
+        </div>
+
+        <section id="input-screen" class="screen active">
+            <div class="cute-card">
+                <div class="logo-wrapper">
+                    <img src="TOBEKC.jpg.jpg" alt="Baojai Logo" class="app-logo">
+                    <img src="FriendCorner.jpg.png" alt="TO BE Logo" class="app-logo">
+                </div>
+                <div class="badge">✿ HAPPY SONGKRAN 2026 ✿</div>
+                <h1 class="main-title">Baojai Zone<br><span class="accent">TO BE NUMBER ONE SADAO KHANCHAI</span></h1>
+                <p class="subtitle"></p>
+                
+                <div class="input-group">
+                    <textarea id="feelingInput" placeholder="ระบายเรื่องที่ไม่สบายใจได้ที่นี่..."></textarea>
+                    <button id="startBtn" class="action-btn">
+                        <span>เริ่มชำระล้าง</span>
+                        <div class="btn-glow"></div>
+                    </button>
+                    <button onclick="window.location.href='index.html'" class="back-link">
+                        <i class="fas fa-home"></i> กลับไปยัง Baojai
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="game-screen" class="screen">
+            <canvas id="particleCanvas"></canvas>
+            
+            <div class="ui-layer">
+                <button onclick="window.location.href='index.html'" class="floating-back">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+
+                <!-- พื้นที่สำหรับสร้างฟองอากาศหลายๆ ลูก -->
+                <div id="bubble-container"></div>
+
+                <div class="pro-instruction">กดค้างเพื่อฉีดน้ำชำระล้างความทุกข์</div>
+
+                <div class="weapon-container">
+                    <div id="water-gun" class="gun-model">
+                        <div class="gun-nozzle"></div>
+                        <div class="gun-barrel"></div>
+                        <div class="gun-tank-pro">
+                            <img src="TOBEKC.jpg.jpg" class="gun-logo" alt="Gun Logo">
+                        </div>
+                        <div class="gun-body-bridge"></div>
+                        <div class="gun-handle"></div>
+                        <div class="nozzle-light"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="success-screen" class="screen">
+            <div class="success-content">
+                <i class="fas fa-check-circle success-icon"></i>
+                <h2>ชำระล้างสำเร็จ</h2>
+                <p>ความทุกข์ของคุณได้หายไปกับสายน้ำแล้ว</p>
+                <button onclick="location.reload()" class="action-btn">เริ่มใหม่อีกครั้ง</button>
+                <button onclick="window.location.href='index.html'" class="secondary-btn">กลับหน้าหลัก</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Firebase SDK (Compat Version เพื่อให้เข้ากับโค้ดส่วนอื่นในโปรเจกต์) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script src="songkran-script.js"></script>
+</body>
+</html>
