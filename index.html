@@ -108,430 +108,411 @@
                 </div>
             </div>
 
-            <div id="spaceOverlay" style="display:none;" class="space-overlay">
-                <div id="skyBg" class="sky-background">
-                    <div class="stars"></div>
-                    <div id="moon" class="moon"></div>
+            <div id="globalChatScreen"
+                style="display:none; flex-direction: column; flex-grow: 1;">
+                <div id="chatHeader"
+                    style="background: linear-gradient(to right, #8b0000, #1a1a1a); border-bottom: 2px solid #d4af37;">
+                    <button id="homeButton" onclick="showStartScreen()">
+                        <i class="fas fa-home"></i> หน้าแรก
+                    </button>
+                    <span id="chatTitle"><i class="fas fa-globe"></i>
+                        ห้องแชทรวม</span>
+                    <div style="width: 70px;">&nbsp;</div>
                 </div>
 
-                <div class="space-content">
-                    <div id="groundScene" class="ground-scene">
-                        <div class="clouds"></div> <div
-                            class="ground-texture"></div> </div>
+                <div id="globalChatBox" class="chat-box-style">
+                </div>
 
-                    <div id="earth" class="earth"></div>
+                <div class="input-container-modern">
+                    <div class="input-wrapper">
+                        <textarea id="globalChatInput"
+                            placeholder="พิมพ์คุยกับทุกคน..."
+                            rows="1"
+                            oninput="autoResize(this)"></textarea>
 
-                    <div id="animationScene">
-                        <div id="droppedLetter" class="dropped-letter"
-                            style="display:none;">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-
-                        <div id="paperLetter" class="paper-letter">
-                            <textarea id="spaceInput"
-                                placeholder="เขียนความรู้สึกของคุณ แล้วส่งไปฝากไว้ที่ดวงจันทร์..."></textarea>
-                        </div>
-
-                        <div id="launchPad" class="launch-pad">
-                            <div id="rocketShip" class="rocket-ship">
-                                <i class="fas fa-rocket"></i>
-                                <div id="thrustFire" class="thrust-fire"></div>
-                            </div>
-                            <div class="ground-line"></div>
-                        </div>
-                    </div>
-
-                    <div id="spaceActions">
-                        <button id="launchBtn" onclick="startArtemisLaunch()"
-                            class="launch-btn">
-                            <i class="fas fa-shuttle-space"></i> Ignition &
-                            Landing!
+                        <button class="send-btn-modern"
+                            onclick="sendGlobalMessage()">
+                            <i class="fas fa-paper-plane"></i>
                         </button>
-                        <button onclick="closeSpace()"
-                            class="close-btn">ยกเลิก</button>
                     </div>
                 </div>
             </div>
-
         </div>
 
-        <div id="contextMenu"
-            style="display:none; position:fixed; z-index:999999; pointer-events:none;">
-            <div id="deleteOption"
-                style="display: inline-flex; align-items: center; padding: 10px 20px; 
+    </div>
+
+    <div id="contextMenu"
+        style="display:none; position:fixed; z-index:999999; pointer-events:none;">
+        <div id="deleteOption"
+            style="display: inline-flex; align-items: center; padding: 10px 20px; 
                 cursor: pointer; color: white; background: #ff3b30; 
                 border-radius: 50px; font-weight: 600; font-size: 14px; 
                 box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4); 
                 pointer-events: auto; white-space: nowrap; 
                 border: 2px solid white; font-family: 'Sarabun', sans-serif;">
-                <i class="fas fa-trash-alt" style="margin-right: 8px;"></i>
-                ยกเลิกการส่ง
+            <i class="fas fa-trash-alt" style="margin-right: 8px;"></i>
+            ยกเลิกการส่ง
+        </div>
+    </div>
+
+    <audio id="notifySound" src="notify.mp3" preload="auto"></audio>
+
+    <div id="welcome-popup-overlay" class="overlay active">
+        <div class="popup-content">
+            <h2 class="popup-title">2BKC Baojai Zone</h2>
+
+            <div class="popup-description">
+                <p>สำหรับผู้ที่ต้องการคำปรึกษา ไม่ว่าจะเป็นปัญหาเล็กหรือใหญ่
+                    ก็สามารถเข้ามาคุยกับเราแบบไม่ระบุตัวตน
+                    เพื่อความสบายใจของทุกคนได้นะคับ</p>
             </div>
-        </div>
 
-        <audio id="notifySound" src="notify.mp3" preload="auto"></audio>
-
-        <div id="welcome-popup-overlay" class="overlay active">
-            <div class="popup-content">
-                <h2 class="popup-title">2BKC Baojai Zone</h2>
-
-                <div class="popup-description">
-                    <p>สำหรับผู้ที่ต้องการคำปรึกษา ไม่ว่าจะเป็นปัญหาเล็กหรือใหญ่
-                        ก็สามารถเข้ามาคุยกับเราแบบไม่ระบุตัวตน
-                        เพื่อความสบายใจของทุกคนได้นะคับ</p>
-                </div>
-
-                <div class="popup-warning">
-                    <p>❗แชทนี้จะทำการตอบกลับโดยแอดมิน
-                        ขออภัยหากเกิดความล่าช้า❗</p>
-                </div>
-
-                <div class="popup-credit">
-                    <p class="club-name">ออกแบบและพัฒนาโดย</p>
-                    <h3 class="club-name">คณะกรรมการดำเนินงานชมรม TO BE
-                        NUMBER ONE</h3>
-                    <p class="club-name">โรงเรียนสะเดา
-                        "ขรรค์ชัยกัมพลานนท์อนุสรณ์"</p>
-                </div>
-
-                <button id="close-popup" class="action-button"
-                    onclick="showNextPopup()">เข้าสู่เว็บไซต์</button>
+            <div class="popup-warning">
+                <p>❗แชทนี้จะทำการตอบกลับโดยแอดมิน
+                    ขออภัยหากเกิดความล่าช้า❗</p>
             </div>
+
+            <div class="popup-credit">
+                <p class="club-name">ออกแบบและพัฒนาโดย</p>
+                <h3 class="club-name">คณะกรรมการดำเนินงานชมรม TO BE
+                    NUMBER ONE</h3>
+                <p class="club-name">โรงเรียนสะเดา
+                    "ขรรค์ชัยกัมพลานนท์อนุสรณ์"</p>
+            </div>
+
+            <button id="close-popup" class="action-button"
+                onclick="showNextPopup()">เข้าสู่เว็บไซต์</button>
         </div>
+    </div>
 
-        <div id="screen-chat" class="app-screen">
-        </div>
+    <div id="screen-chat" class="app-screen">
+    </div>
 
-        <div id="screen-social" class="app-screen">
-            <div class="contact-header-area">
-                <h2 class="contact-main-title">Social Media</h2>
-                <p
-                    class="contact-sub-title">สามารถติดตามข่าวสารเพิ่มเติมได้ที่ช่องทางด้านล่างนี้
-                </div>
+    <div id="screen-social" class="app-screen">
+        <div class="contact-header-area">
+            <h2 class="contact-main-title">Social Media</h2>
+            <p
+                class="contact-sub-title">สามารถติดตามข่าวสารเพิ่มเติมได้ที่ช่องทางด้านล่างนี้
+            </div>
 
-                <div class="contact-container">
+            <div class="contact-container">
+                <div class="contact-category-card">
+                    <div class="category-header fb-bg">
+                        <i class="fab fa-facebook"></i>
+                        <span>Facebook</span>
+                    </div>
+                    <div class="category-body">
+                        <a
+                            href="https://www.facebook.com/TOBENUMBERONESADAOKHANCHAI?"
+                            target="_blank" class="contact-link-btn">
+                            <div class="btn-info">
+                                <strong>TO BE NUMBER ONE SADAO
+                                    KHANCHAI</strong>
+                                <span>Sadao Khanchai Kamphalanon Anusorn
+                                    School
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <a
+                                href="https://www.facebook.com/FriendCornerSadaoKhanchai"
+                                target="_blank" class="contact-link-btn">
+                                <div class="btn-info">
+                                    <strong>ศูนย์เพื่อนใจโรงเรียนสะเดา"ขรรค์ชัยกัมพลานนท์อนุสรณ์"</strong>
+                                    <span>Sadao Khanchai Kamphalanon Anusorn
+                                        School</span>
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+
                     <div class="contact-category-card">
-                        <div class="category-header fb-bg">
-                            <i class="fab fa-facebook"></i>
-                            <span>Facebook</span>
+                        <div class="category-header ig-bg">
+                            <i class="fab fa-instagram"></i>
+                            <span>Instagram</span>
                         </div>
                         <div class="category-body">
                             <a
-                                href="https://www.facebook.com/TOBENUMBERONESADAOKHANCHAI?"
-                                target="_blank" class="contact-link-btn">
+                                href="https://www.instagram.com/2b.sadaokhanchai/?fbclid=IwY2xjawO4i3tleHRuA2FlbQIxMABicmlkETFIeHI1ZmxnODlqaXN6ODNyc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHl--D0FsPhKIQ_2hA_DKbNzAlPpwMgrZV1Tpr2U8EDEqtCOmAE594sv2b8av_aem_uegztVQHY6E1_971jX2WyQ#"
+                                class="contact-link-btn">
                                 <div class="btn-info">
-                                    <strong>TO BE NUMBER ONE SADAO
-                                        KHANCHAI</strong>
+                                    <strong>2b.sadaokhanchai</strong>
                                     <span>Sadao Khanchai Kamphalanon Anusorn
-                                        School
-                                    </div>
-                                    <i class="fas fa-chevron-right"></i>
-                                </a>
-                                <a
-                                    href="https://www.facebook.com/FriendCornerSadaoKhanchai"
-                                    target="_blank" class="contact-link-btn">
-                                    <div class="btn-info">
-                                        <strong>ศูนย์เพื่อนใจโรงเรียนสะเดา"ขรรค์ชัยกัมพลานนท์อนุสรณ์"</strong>
-                                        <span>Sadao Khanchai Kamphalanon Anusorn
-                                            School</span>
-                                    </div>
-                                    <i class="fas fa-chevron-right"></i>
-                                </a>
+                                        School</span>
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <a
+                                href="https://www.instagram.com/2bkc.friendcorner/?fbclid=IwY2xjawO4i11leHRuA2FlbQIxMABicmlkETFIeHI1ZmxnODlqaXN6ODNyc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHl--D0FsPhKIQ_2hA_DKbNzAlPpwMgrZV1Tpr2U8EDEqtCOmAE594sv2b8av_aem_uegztVQHY6E1_971jX2WyQ#"
+                                class="contact-link-btn">
+                                <div class="btn-info">
+                                    <strong>2bkc.friendcorner</strong>
+                                    <span>Sadao Khanchai Kamphalanon Anusorn
+                                        School</span>
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="screen-admin" class="app-screen"
+                style="display: none;">
+                <div class="content-box">
+                    <div class="admin-header-logo">
+                        <img src="KCFCAM.png" draggable="false"
+                            alt="Baojai Logo"
+                            class="header-img">
+                    </div>
+                    <div class="admin-list">
+                        <div class="admin-list-item"
+                            onclick="showAdminPopup('นางสาวนันถิวา  วันจิรพัฒน์', 'ผู้จัดการศูนย์เพื่อนใจ', 'admin1.jpg', 'https://www.facebook.com/search/top/?q=nanthiva%20wanjirapat', 'https://www.instagram.com/newwqb_ntw?igsh=cjIxbmx1empjNXo1')">
+                            <div class="admin-avatar">
+                                <img src="admin1.jpg" draggable="false"
+                                    alt="Admin 1">
                             </div>
+                            <div class="admin-info-text">
+                                <span class="admin-name">ADMIN</span>
+                                <span
+                                    class="admin-role">ผู้จัดการศูนย์เพื่อนใจ</span>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
                         </div>
 
-                        <div class="contact-category-card">
-                            <div class="category-header ig-bg">
-                                <i class="fab fa-instagram"></i>
-                                <span>Instagram</span>
+                        <div class="admin-list-item"
+                            onclick="showAdminPopup('นายศุภนัฐ  วงศ์จันทร์', 'รองผู้จัดการศูนย์เพื่อนใจ', 'admin2.jpg', 'https://www.facebook.com/xa.cheiyn', 'https://www.instagram.com/echiiyn7049?igsh=M285NTM3eXhmbTJh')">
+                            <div class="admin-avatar">
+                                <img src="admin2.jpg" draggable="false"
+                                    alt="Admin 2">
                             </div>
-                            <div class="category-body">
-                                <a
-                                    href="https://www.instagram.com/2b.sadaokhanchai/?fbclid=IwY2xjawO4i3tleHRuA2FlbQIxMABicmlkETFIeHI1ZmxnODlqaXN6ODNyc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHl--D0FsPhKIQ_2hA_DKbNzAlPpwMgrZV1Tpr2U8EDEqtCOmAE594sv2b8av_aem_uegztVQHY6E1_971jX2WyQ#"
-                                    class="contact-link-btn">
-                                    <div class="btn-info">
-                                        <strong>2b.sadaokhanchai</strong>
-                                        <span>Sadao Khanchai Kamphalanon Anusorn
-                                            School</span>
-                                    </div>
-                                    <i class="fas fa-chevron-right"></i>
+                            <div class="admin-info-text">
+                                <span class="admin-name">ADMIN</span>
+                                <span
+                                    class="admin-role">รองผู้จัดการศูนย์เพื่อนใจ</span>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+
+                        <div class="admin-list-item"
+                            onclick="showAdminPopup('นายอานัส  หัดชุมพร', 'รองผู้จัดการศูนย์เพื่อนใจ', 'admin3.jpg', 'https://www.facebook.com/zun.arnas.2025', 'https://www.instagram.com/zun_111252?igsh=YXdyYjhyeXJ3anM4')">
+                            <div class="admin-avatar">
+                                <img src="admin3.jpg" draggable="false"
+                                    alt="Admin 2">
+                            </div>
+                            <div class="admin-info-text">
+                                <span class="admin-name">ADMIN</span>
+                                <span
+                                    class="admin-role">รองผู้จัดการศูนย์เพื่อนใจ</span>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+
+                        <div class="admin-list-item"
+                            onclick="showAdminPopup('นายกิตติพัทธ์  แซ่ลิ่ม', 'สมาชิกศูนย์เพื่อนใจ', 'developer.jpg', 'https://www.facebook.com/Not.Kittipat', 'https://www.instagram.com/not_kitti.pat?igsh=Y3Q3aHFubWUzYXd4&utm_source=qr')">
+                            <div class="admin-avatar">
+                                <img src="developer.jpg" draggable="false"
+                                    alt="Admin 2">
+                            </div>
+                            <div class="admin-info-text">
+                                <span class="admin-name">Developer</span>
+                                <span
+                                    class="admin-role">สมาชิกศูนย์เพื่อนใจ</span>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-modal-overlay" class="modal-overlay"
+                    onclick="closeAdminPopup(event)">
+                    <div class="modal-content"
+                        onclick="event.stopPropagation()">
+                        <button class="modal-close"
+                            onclick="closeAdminPopupForce()">&times;</button>
+
+                        <div class="modal-body">
+                            <div class="modal-avatar-wrapper">
+                                <img id="modal-img" src alt="Profile">
+                            </div>
+                            <h2 id="modal-name">ชื่อแอดมิน</h2>
+                            <p id="modal-role"
+                                class="modal-role-badge">ตำแหน่ง</p>
+
+                            <div class="modal-description">
+                                <p>ข้อมูลการติดต่อ (Contact)</p>
+                            </div>
+
+                            <div class="modal-footer-actions">
+                                <a id="modal-fb-link" href="#"
+                                    target="_blank"
+                                    class="modal-btn fb-style">
+                                    <i class="fab fa-facebook-f"></i>
+                                    Facebook
                                 </a>
-                                <a
-                                    href="https://www.instagram.com/2bkc.friendcorner/?fbclid=IwY2xjawO4i11leHRuA2FlbQIxMABicmlkETFIeHI1ZmxnODlqaXN6ODNyc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHl--D0FsPhKIQ_2hA_DKbNzAlPpwMgrZV1Tpr2U8EDEqtCOmAE594sv2b8av_aem_uegztVQHY6E1_971jX2WyQ#"
-                                    class="contact-link-btn">
-                                    <div class="btn-info">
-                                        <strong>2bkc.friendcorner</strong>
-                                        <span>Sadao Khanchai Kamphalanon Anusorn
-                                            School</span>
-                                    </div>
-                                    <i class="fas fa-chevron-right"></i>
+
+                                <a id="modal-ig-link" href="#"
+                                    target="_blank"
+                                    class="modal-btn ig-style">
+                                    <i class="fab fa-instagram"></i>
+                                    Instagram
                                 </a>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div id="screen-admin" class="app-screen"
-                    style="display: none;">
-                    <div class="content-box">
-                        <div class="admin-header-logo">
-                            <img src="KCFCAM.png" draggable="false"
-                                alt="Baojai Logo"
-                                class="header-img">
-                        </div>
-                        <div class="admin-list">
-                            <div class="admin-list-item"
-                                onclick="showAdminPopup('นางสาวนันถิวา  วันจิรพัฒน์', 'ผู้จัดการศูนย์เพื่อนใจ', 'admin1.jpg', 'https://www.facebook.com/search/top/?q=nanthiva%20wanjirapat', 'https://www.instagram.com/newwqb_ntw?igsh=cjIxbmx1empjNXo1')">
-                                <div class="admin-avatar">
-                                    <img src="admin1.jpg" draggable="false"
-                                        alt="Admin 1">
-                                </div>
-                                <div class="admin-info-text">
-                                    <span class="admin-name">ADMIN</span>
-                                    <span
-                                        class="admin-role">ผู้จัดการศูนย์เพื่อนใจ</span>
-                                </div>
-                                <i class="fas fa-chevron-right"></i>
-                            </div>
+            <div id="customHelpOverlay" onclick="toggleHelpPopup(false)"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;">
+                <div class="custom-help-content"
+                    onclick="event.stopPropagation()"
+                    style="background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 350px;">
 
-                            <div class="admin-list-item"
-                                onclick="showAdminPopup('นายศุภนัฐ  วงศ์จันทร์', 'รองผู้จัดการศูนย์เพื่อนใจ', 'admin2.jpg', 'https://www.facebook.com/xa.cheiyn', 'https://www.instagram.com/echiiyn7049?igsh=M285NTM3eXhmbTJh')">
-                                <div class="admin-avatar">
-                                    <img src="admin2.jpg" draggable="false"
-                                        alt="Admin 2">
-                                </div>
-                                <div class="admin-info-text">
-                                    <span class="admin-name">ADMIN</span>
-                                    <span
-                                        class="admin-role">รองผู้จัดการศูนย์เพื่อนใจ</span>
-                                </div>
-                                <i class="fas fa-chevron-right"></i>
-                            </div>
-
-                            <div class="admin-list-item"
-                                onclick="showAdminPopup('นายอานัส  หัดชุมพร', 'รองผู้จัดการศูนย์เพื่อนใจ', 'admin3.jpg', 'https://www.facebook.com/zun.arnas.2025', 'https://www.instagram.com/zun_111252?igsh=YXdyYjhyeXJ3anM4')">
-                                <div class="admin-avatar">
-                                    <img src="admin3.jpg" draggable="false"
-                                        alt="Admin 2">
-                                </div>
-                                <div class="admin-info-text">
-                                    <span class="admin-name">ADMIN</span>
-                                    <span
-                                        class="admin-role">รองผู้จัดการศูนย์เพื่อนใจ</span>
-                                </div>
-                                <i class="fas fa-chevron-right"></i>
-                            </div>
-
-                            <div class="admin-list-item"
-                                onclick="showAdminPopup('นายกิตติพัทธ์  แซ่ลิ่ม', 'สมาชิกศูนย์เพื่อนใจ', 'developer.jpg', 'https://www.facebook.com/Not.Kittipat', 'https://www.instagram.com/not_kitti.pat?igsh=Y3Q3aHFubWUzYXd4&utm_source=qr')">
-                                <div class="admin-avatar">
-                                    <img src="developer.jpg" draggable="false"
-                                        alt="Admin 2">
-                                </div>
-                                <div class="admin-info-text">
-                                    <span class="admin-name">Developer</span>
-                                    <span
-                                        class="admin-role">สมาชิกศูนย์เพื่อนใจ</span>
-                                </div>
-                                <i class="fas fa-chevron-right"></i>
-                            </div>
+                    <div id="help-main-menu">
+                        <h3
+                            style="margin-top: 0; color: #8b0000; text-align: center;">
+                            <i class="fas fa-question-circle"></i>
+                            เลือกหัวข้อที่ต้องการ
+                        </h3>
+                        <hr
+                            style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+                        <div class="help-menu-list">
+                            <button class="help-item-btn"
+                                onclick="showHelpDetail('install')">
+                                <i class="fas fa-mobile-alt"></i>
+                                <span>วิธีเพิ่มเว็บลงหน้าจอหลัก</span>
+                            </button>
+                            <button class="help-item-btn"
+                                onclick="showHelpDetail('warn')">
+                                <i class="fas fa-bell"></i>
+                                <span>วิธีเปิดใช้งานการแจ้งเตือน</span>
+                            </button>
+                            <button class="help-item-btn"
+                                onclick="showHelpDetail('delete')">
+                                <i class="fas fa-eraser"></i>
+                                <span>วิธียกเลิกข้อความ</span>
+                            </button>
                         </div>
                     </div>
 
-                    <div id="admin-modal-overlay" class="modal-overlay"
-                        onclick="closeAdminPopup(event)">
-                        <div class="modal-content"
-                            onclick="event.stopPropagation()">
-                            <button class="modal-close"
-                                onclick="closeAdminPopupForce()">&times;</button>
+                    <div id="help-detail-install" class="help-detail-page"
+                        style="display: none; text-align: left;">
+                        <h3 style="color: #8b0000; text-align: center;"><i
+                                class="fas fa-mobile-alt"></i>
+                            เพิ่มลงหน้าจอหลัก</h3>
+                        <div
+                            style="font-size: 14px; color: #555; line-height: 1.6;">
 
-                            <div class="modal-body">
-                                <div class="modal-avatar-wrapper">
-                                    <img id="modal-img" src alt="Profile">
-                                </div>
-                                <h2 id="modal-name">ชื่อแอดมิน</h2>
-                                <p id="modal-role"
-                                    class="modal-role-badge">ตำแหน่ง</p>
-
-                                <div class="modal-description">
-                                    <p>ข้อมูลการติดต่อ (Contact)</p>
-                                </div>
-
-                                <div class="modal-footer-actions">
-                                    <a id="modal-fb-link" href="#"
-                                        target="_blank"
-                                        class="modal-btn fb-style">
-                                        <i class="fab fa-facebook-f"></i>
-                                        Facebook
-                                    </a>
-
-                                    <a id="modal-ig-link" href="#"
-                                        target="_blank"
-                                        class="modal-btn ig-style">
-                                        <i class="fab fa-instagram"></i>
-                                        Instagram
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="customHelpOverlay" onclick="toggleHelpPopup(false)"
-                    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;">
-                    <div class="custom-help-content"
-                        onclick="event.stopPropagation()"
-                        style="background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 350px;">
-
-                        <div id="help-main-menu">
-                            <h3
-                                style="margin-top: 0; color: #8b0000; text-align: center;">
-                                <i class="fas fa-question-circle"></i>
-                                เลือกหัวข้อที่ต้องการ
-                            </h3>
-                            <hr
-                                style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
-                            <div class="help-menu-list">
-                                <button class="help-item-btn"
-                                    onclick="showHelpDetail('install')">
-                                    <i class="fas fa-mobile-alt"></i>
-                                    <span>วิธีเพิ่มเว็บลงหน้าจอหลัก</span>
-                                </button>
-                                <button class="help-item-btn"
-                                    onclick="showHelpDetail('warn')">
-                                    <i class="fas fa-bell"></i>
-                                    <span>วิธีเปิดใช้งานการแจ้งเตือน</span>
-                                </button>
-                                <button class="help-item-btn"
-                                    onclick="showHelpDetail('delete')">
-                                    <i class="fas fa-eraser"></i>
-                                    <span>วิธียกเลิกข้อความ</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div id="help-detail-install" class="help-detail-page"
-                            style="display: none; text-align: left;">
-                            <h3 style="color: #8b0000; text-align: center;"><i
-                                    class="fas fa-mobile-alt"></i>
-                                เพิ่มลงหน้าจอหลัก</h3>
                             <div
-                                style="font-size: 14px; color: #555; line-height: 1.6;">
-
-                                <div
-                                    style="background: #f0f0f0; padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid #000;">
-                                    <p
-                                        style="margin: 0; font-weight: bold; color: #000;">
-                                        <i class="fab fa-apple"
-                                            style="font-size: 18px;"></i> สำหรับ
-                                        iOS
-                                        (Safari)
-                                    </p>
-                                    <p style="margin: 5px 0 0 0;">กดปุ่ม <i
-                                            class="fas fa-share-square"></i>
-                                        (แชร์)
-                                        แล้วเลือก
-                                        <b>"เพิ่มลงหน้าจอโฮม"</b></p>
-                                </div>
-
-                                <div
-                                    style="background: #f0fff0; padding: 12px; border-radius: 10px; border-left: 5px solid #3ddc84;">
-                                    <p
-                                        style="margin: 0; font-weight: bold; color: #3ddc84;">
-                                        <i class="fab fa-android"
-                                            style="font-size: 18px;"></i> สำหรับ
-                                        Android (Chrome)
-                                    </p>
-                                    <p style="margin: 5px 0 0 0;">กดปุ่ม <i
-                                            class="fas fa-ellipsis-v"></i> (3
-                                        จุด) แล้วเลือก <b>"ติดตั้งแอป"</b>
-                                        หรือ <b>"เพิ่มลงหน้าจอหลัก"</b></p>
-                                </div>
-
+                                style="background: #f0f0f0; padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid #000;">
+                                <p
+                                    style="margin: 0; font-weight: bold; color: #000;">
+                                    <i class="fab fa-apple"
+                                        style="font-size: 18px;"></i> สำหรับ iOS
+                                    (Safari)
+                                </p>
+                                <p style="margin: 5px 0 0 0;">กดปุ่ม <i
+                                        class="fas fa-share-square"></i> (แชร์)
+                                    แล้วเลือก
+                                    <b>"เพิ่มลงหน้าจอโฮม"</b></p>
                             </div>
-                            <button class="back-btn"
-                                onclick="showHelpDetail('main')"
-                                style="margin-top: 15px;">ย้อนกลับ</button>
-                        </div>
 
-                        <div id="help-detail-warn" class="help-detail-page"
-                            style="display: none; text-align: left;">
-                            <h3 style="color: #8b0000;"><i
-                                    class="fas fa-bell"></i>
-                                การแจ้งเตือน</h3>
                             <div
-                                style="font-size: 14px; color: #555; line-height: 1.5;">
-                                <p>1. เมื่อเข้าหน้าเว็บครั้งแรก ให้กด
-                                    <b>"อนุญาต"
-                                        (Allow)</b></p>
-                                <p>2. หากไม่มีปุ่มขึ้น
-                                    ให้กดเพิ่มเว็บลงในหน้าจอหลักก่อน</p>
-                                <p>3. เข้าใช้งานผ่านไอคอนบนหน้าจอหลัก
-                                    ระบบจะเปิดการแจ้งเตือนให้อัตโนมัติ</p>
-                                ❗หากไม่เพิ่มลงในหน้าจอหลักจะไม่สามารถใช้งานการแจ้งเตือนได้❗
+                                style="background: #f0fff0; padding: 12px; border-radius: 10px; border-left: 5px solid #3ddc84;">
+                                <p
+                                    style="margin: 0; font-weight: bold; color: #3ddc84;">
+                                    <i class="fab fa-android"
+                                        style="font-size: 18px;"></i> สำหรับ
+                                    Android (Chrome)
+                                </p>
+                                <p style="margin: 5px 0 0 0;">กดปุ่ม <i
+                                        class="fas fa-ellipsis-v"></i> (3
+                                    จุด) แล้วเลือก <b>"ติดตั้งแอป"</b>
+                                    หรือ <b>"เพิ่มลงหน้าจอหลัก"</b></p>
                             </div>
-                            <button class="back-btn"
-                                onclick="showHelpDetail('main')">ย้อนกลับ</button>
-                        </div>
 
-                        <div id="help-detail-delete" class="help-detail-page"
-                            style="display: none; text-align: left;">
-                            <h3 style="color: #8b0000;"><i
-                                    class="fas fa-eraser"></i>
-                                ยกเลิกข้อความ</h3>
-                            <p
-                                style="font-size: 14px; color: #555; line-height: 1.5;">
-                                หากพิมพ์ผิดหรือต้องการลบ ให้ <b>กดค้าง</b>
-                                ที่ข้อความ แล้วเลือกเมนู <b>"ยกเลิกการส่ง"</b>
-                                เพื่อยกเลิกข้อความ
-                            </p>
-                            <button class="back-btn"
-                                onclick="showHelpDetail('main')">ย้อนกลับ</button>
                         </div>
-
-                        <button class="close-help-btn"
-                            onclick="toggleHelpPopup(false)"
-                            style="margin-top: 20px; width: 100%; padding: 12px; background: #eee; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; color: #666;">
-                            ปิดหน้าต่าง
-                        </button>
+                        <button class="back-btn"
+                            onclick="showHelpDetail('main')"
+                            style="margin-top: 15px;">ย้อนกลับ</button>
                     </div>
+
+                    <div id="help-detail-warn" class="help-detail-page"
+                        style="display: none; text-align: left;">
+                        <h3 style="color: #8b0000;"><i class="fas fa-bell"></i>
+                            การแจ้งเตือน</h3>
+                        <div
+                            style="font-size: 14px; color: #555; line-height: 1.5;">
+                            <p>1. เมื่อเข้าหน้าเว็บครั้งแรก ให้กด <b>"อนุญาต"
+                                    (Allow)</b></p>
+                            <p>2. หากไม่มีปุ่มขึ้น
+                                ให้กดเพิ่มเว็บลงในหน้าจอหลักก่อน</p>
+                            <p>3. เข้าใช้งานผ่านไอคอนบนหน้าจอหลัก
+                                ระบบจะเปิดการแจ้งเตือนให้อัตโนมัติ</p>
+                            ❗หากไม่เพิ่มลงในหน้าจอหลักจะไม่สามารถใช้งานการแจ้งเตือนได้❗
+                        </div>
+                        <button class="back-btn"
+                            onclick="showHelpDetail('main')">ย้อนกลับ</button>
+                    </div>
+
+                    <div id="help-detail-delete" class="help-detail-page"
+                        style="display: none; text-align: left;">
+                        <h3 style="color: #8b0000;"><i
+                                class="fas fa-eraser"></i> ยกเลิกข้อความ</h3>
+                        <p
+                            style="font-size: 14px; color: #555; line-height: 1.5;">
+                            หากพิมพ์ผิดหรือต้องการลบ ให้ <b>กดค้าง</b>
+                            ที่ข้อความ แล้วเลือกเมนู <b>"ยกเลิกการส่ง"</b>
+                            เพื่อยกเลิกข้อความ
+                        </p>
+                        <button class="back-btn"
+                            onclick="showHelpDetail('main')">ย้อนกลับ</button>
+                    </div>
+
+                    <button class="close-help-btn"
+                        onclick="toggleHelpPopup(false)"
+                        style="margin-top: 20px; width: 100%; padding: 12px; background: #eee; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; color: #666;">
+                        ปิดหน้าต่าง
+                    </button>
                 </div>
+            </div>
 
-                <nav class="admin-bottom-nav">
-                    <div id="navIndicator" class="nav-indicator"></div>
+            <nav class="admin-bottom-nav">
+                <div id="navIndicator" class="nav-indicator"></div>
 
-                    <div class="nav-item active"
-                        onclick="changePage('chat', this)">
-                        <i class="fas fa-comments"></i>
-                        <span>Baojai Chat</span>
-                    </div>
-                    <div class="nav-item" onclick="changePage('social', this)">
-                        <i class="fas fa-share-alt"></i>
-                        <span>Social Media</span>
-                    </div>
-                    <div class="nav-item"
-                        onclick="changePage('admin-info', this)">
-                        <i class="fas fa-user-shield"></i>
-                        <span>ข้อมูลแอดมิน</span>
-                    </div>
-                </nav>
+                <div class="nav-item active"
+                    onclick="changePage('chat', this)">
+                    <i class="fas fa-comments"></i>
+                    <span>Baojai Chat</span>
+                </div>
+                <div class="nav-item" onclick="changePage('social', this)">
+                    <i class="fas fa-share-alt"></i>
+                    <span>Social Media</span>
+                </div>
+                <div class="nav-item"
+                    onclick="changePage('admin-info', this)">
+                    <i class="fas fa-user-shield"></i>
+                    <span>ข้อมูลแอดมิน</span>
+                </div>
+            </nav>
 
-                <script
-                    src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-                <script
-                    src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-                <script
-                    src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-                <script
-                    src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+            <script
+                src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+            <script
+                src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+            <script
+                src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+            <script
+                src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 
-                <script src="user.js"></script>
-                <!-- Vercel Analytics -->
-                <script>
+            <script src="user.js"></script>
+            <!-- Vercel Analytics -->
+            <script>
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
 </script>
-                <script defer src="/_vercel/insights/script.js"></script>
+            <script defer src="/_vercel/insights/script.js"></script>
 
-            </body>
+        </body>
 
-        </html>
+    </html>
